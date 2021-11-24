@@ -9,7 +9,7 @@ networks:
 
 services:
   toposoid-knowledge-register-web:
-    image: toposoid-knowledge-register-web:0.1.1
+    image: toposoid-knowledge-register-web:0.1-SNAPSHOT
     tty: true
     environment:
       - GRAPHDB_HOST=172.30.0.2
