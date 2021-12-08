@@ -16,6 +16,8 @@
 
 package controllers
 
+import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.Play.materializer
@@ -29,12 +31,17 @@ import play.api.test.Helpers._
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class HomeControllerSpec extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerTest with Injecting {
+
+
+  override def beforeAll(): Unit = {
+    Neo4JAccessor.delete()
+  }
 
   "HomeController POST" should {
     "render the index page from a new instance of controller" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "json":"{}"}]}"""
+      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "extentInfoJson":"{}"}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
