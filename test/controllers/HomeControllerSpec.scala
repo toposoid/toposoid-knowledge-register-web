@@ -38,10 +38,22 @@ class HomeControllerSpec extends PlaySpec with BeforeAndAfter with BeforeAndAfte
     Neo4JAccessor.delete()
   }
 
-  "HomeController POST" should {
-    "render the index page from a new instance of controller" in {
+  "HomeController POST(japanese knowledge)" should {
+    "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "extentInfoJson":"{}"}]}"""
+      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "lang": "ja_JP", "extentInfoJson":"{}"}]}"""
+      val fr = FakeRequest(POST, "/regist")
+        .withHeaders("Content-type" -> "application/json")
+        .withJsonBody(Json.parse(jsonStr))
+      val result= call(controller.regist(), fr)
+      status(result) mustBe OK
+    }
+  }
+
+  "HomeController POST(english knowledge)" should {
+    "returns an appropriate response" in {
+      val controller: HomeController = inject[HomeController]
+      val jsonStr:String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}"}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
