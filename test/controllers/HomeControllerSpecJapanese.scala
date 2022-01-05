@@ -50,9 +50,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
         .withJsonBody(Json.parse(jsonStr))
       val result= call(controller.regist(), fr)
       status(result) mustBe OK
-
-      import java.util.concurrent.TimeUnit
-      TimeUnit.SECONDS.sleep(5)
+      Thread.sleep(30000)
       val query = "MATCH x = (:ClaimNode{surface:'これは'})-[:ClaimEdge]->(:ClaimNode{surface:'テストです。'})　 return x"
       val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
       assert(queryResult.hasNext())
