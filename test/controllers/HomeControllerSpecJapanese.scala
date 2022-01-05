@@ -26,6 +26,8 @@ import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
+import scala.concurrent.duration.Duration
+
 /**
  * Add your spec here.
  * You can mock out a whole application including requests, plugins etc.
@@ -48,8 +50,10 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
         .withJsonBody(Json.parse(jsonStr))
       val result= call(controller.regist(), fr)
       status(result) mustBe OK
-      Thread.sleep(10000)
+
       val query = "MATCH x = (:ClaimNode{surface:'これは'})-[:ClaimEdge]->(:ClaimNode{surface:'テストです。'})　 return x"
+
+
       val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
       assert(queryResult.hasNext())
     }
