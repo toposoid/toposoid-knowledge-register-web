@@ -16,12 +16,15 @@
 
 package controllers
 
+import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
+import org.neo4j.driver.Result
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
 import play.api.Play.materializer
 import play.api.libs.json.Json
-import play.api.test._
 import play.api.test.Helpers._
+import play.api.test._
 
 /**
  * Add your spec here.
@@ -29,17 +32,27 @@ import play.api.test.Helpers._
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class HomeControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
+class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerTest with Injecting {
 
-  "HomeController POST" should {
-    "render the index page from a new instance of controller" in {
+
+  override def beforeAll(): Unit = {
+    Neo4JAccessor.delete()
+  }
+
+  "HomeController POST(english knowledge)" should {
+    "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "json":"{}"}]}"""
+      val jsonStr:String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}"}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
       val result= call(controller.regist(), fr)
       status(result) mustBe OK
+      Thread.sleep(60000)
+      val query = "MATCH x = (:ClaimNode{surface:'This'})-[:ClaimEdge]->(:ClaimNode{surface:'is'})<-[:ClaimEdge]-(:ClaimNode{surface:'Test'})<-[:ClaimEdge]-(:ClaimNode{surface:'a'})　return x"
+      val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
+      assert(queryResult.hasNext())
+
     }
   }
 
