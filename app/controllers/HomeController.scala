@@ -17,11 +17,11 @@
 package controllers
 
 import actors.RegistKnowledgeActor
-import actors.RegistKnowledgeActor.RegistKnowledgeUsingSentenceActor
+import actors.RegistKnowledgeActor.{RegistKnowledgeUsingSentenceActor, RegistKnowledgeUsingSentenceSetActor}
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
-import com.ideal.linked.toposoid.knowledgebase.regist.model.Knowledge
+import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.typesafe.scalalogging.LazyLogging
 
 import javax.inject._
@@ -60,6 +60,21 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
       val json = request.body
       val knowledgeSentences: KnowledgeSentences = Json.parse(json.toString).as[KnowledgeSentences]
       (knowledgeRegistActor ? RegistKnowledgeUsingSentenceActor(knowledgeSentences.knowledgeList))
+      Ok({"\"result\":\"OK\""}).as(JSON)
+    }catch{
+      case e: Exception => {
+        logger.error(e.toString(), e)
+        BadRequest(Json.obj("status" ->"Error", "message" -> e.toString()))
+      }
+    }
+  }
+
+  def registByKnowledgeSentenceSet()  = Action(parse.json) { request =>
+    try{
+      val json = request.body
+      val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
+
+      (knowledgeRegistActor ? RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet))
       Ok({"\"result\":\"OK\""}).as(JSON)
     }catch{
       case e: Exception => {

@@ -17,13 +17,14 @@
 package actors
 
 import akka.actor.{Actor, Props}
-import com.ideal.linked.toposoid.knowledgebase.regist.model.Knowledge
+import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.typesafe.scalalogging.LazyLogging
 
 object RegistKnowledgeActor {
   def props = Props[RegistKnowledgeActor]
   case class RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge])
+  case class RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet)
 }
 
 /**
@@ -50,5 +51,16 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
       }
       sender() ! "OK "
     }
+    case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet) => {
+      try {
+        Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSet)
+      } catch {
+        case e: Exception => {
+          logger.error(e.toString, e)
+        }
+      }
+      sender() ! "OK "
+    }
+
   }
 }
