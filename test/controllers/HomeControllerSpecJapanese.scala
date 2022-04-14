@@ -44,7 +44,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
   "HomeController POST(japanese knowledge)" should {
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "lang": "ja_JP", "extentInfoJson":"{}"}]}"""
+      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "lang": "ja_JP", "extentInfoJson":"{}", "isNegativeSentence":false}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
@@ -65,12 +65,14 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
                              |		{
                              |			"sentence": "これはテストの前提1です。",
                              |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}"
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
                              |		},
                              |		{
                              |			"sentence": "これはテストの前提2です。",
                              |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}"
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
                              |		}
                              |	],
                              |	"premiseLogicRelation": [
@@ -84,12 +86,14 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
                              |		{
                              |			"sentence": "これはテストの主張1です。",
                              |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}"
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
                              |		},
                              |		{
                              |			"sentence": "これはテストの主張2です。",
                              |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}"
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
                              |		}
                              |	],
                              |	"claimLogicRelation": [

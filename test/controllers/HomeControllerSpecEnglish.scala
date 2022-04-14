@@ -42,7 +42,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
   "HomeController POST(english knowledge)" should {
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr: String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}"}]}"""
+      val jsonStr: String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}", "isNegativeSentence":false}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
@@ -65,12 +65,14 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
           |		{
           |			"sentence": "This is premise-1.",
           |			"lang": "en_US",
-          |			"extentInfoJson": "{}"
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
           |		},
           |		{
           |			"sentence": "This is premise-2.",
           |			"lang": "en_US",
-          |			"extentInfoJson": "{}"
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
           |		}
           |	],
           |	"premiseLogicRelation": [
@@ -84,12 +86,14 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
           |		{
           |			"sentence": "This is claim-1.",
           |			"lang": "en_US",
-          |			"extentInfoJson": "{}"
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
           |		},
           |		{
           |			"sentence": "This is claim-2.",
           |			"lang": "en_US",
-          |			"extentInfoJson": "{}"
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
           |		}
           |	],
           |	"claimLogicRelation": [
