@@ -17,7 +17,7 @@ of
 
 | Japanse | English |
 | ------------- | ------------- |
-| <img width="369" alt="" src="https://user-images.githubusercontent.com/82787843/169641118-99232ead-dbbc-4302-8649-a8afc5aa0124.png"> | <img width="359" alt="" src="https://user-images.githubusercontent.com/82787843/169641120-f948e645-2f98-42fe-8b0a-383e4f8cc272.png"> |
+| <img width="439" alt="" src="https://user-images.githubusercontent.com/82787843/169641450-8aa73417-76ce-4c72-9811-fa6f0274ddfd.png"> | <img width="438" alt="" src="https://user-images.githubusercontent.com/82787843/169641466-3f14bed7-d107-4f23-8b5f-3bec34ba7a9d.png"> |
 If you want to specify Premise and Claim respectively, this may be good.
 
 * result
@@ -48,7 +48,7 @@ curl -X POST -H "Content-Type: application/json" -d '
 ' http://localhost:9002/regist
 #English
 curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"The answer is blown'\''in the wind.", "lang": "en_US", "extentInfoJson":"{}, "isNegativeSentence": false"}]}
+{"knowledgeList":[{"sentence":"Our life is our art.", "lang": "en_US", "extentInfoJson":"{}, "isNegativeSentence": false"}]}
 ' http://localhost:9002/regist
 ```
 Try accessing http://localhost:7474 in your browser.
