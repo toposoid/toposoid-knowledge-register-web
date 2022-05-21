@@ -9,13 +9,23 @@ This Microservice registers the results of predicate argument structure analysis
 
 | Japanse | English |
 | ------------- | ------------- |
-| <img width="615" alt="スクリーンショット 2022-01-09 18 27 01" src="https://user-images.githubusercontent.com/82787843/148676737-58c087bd-2dfb-47d3-82a2-44f2269e0afd.png"> | <img width="614" alt="スクリーンショット 2022-01-09 18 23 45" src="https://user-images.githubusercontent.com/82787843/148676659-14ce0530-0865-4ff9-ab2f-5fd44544b6b9.png"> |
+| <img width="417" alt="" src="https://user-images.githubusercontent.com/82787843/169640988-9045f53b-2e92-4ade-9efc-c4de9c91827a.png"> | <img width="446" alt="" src="https://user-images.githubusercontent.com/82787843/169640983-23f71563-7df0-452a-9f9d-e5096465c2f3.png">
+|
+This is simple.
+
+of
+
+| Japanse | English |
+| ------------- | ------------- |
+| <img width="369" alt="" src="https://user-images.githubusercontent.com/82787843/169641118-99232ead-dbbc-4302-8649-a8afc5aa0124.png"> | <img width="359" alt="" src="https://user-images.githubusercontent.com/82787843/169641120-f948e645-2f98-42fe-8b0a-383e4f8cc272.png"> |
+If you want to specify Premise and Claim respectively, this may be good.
+
 * result
 <img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
 
 
 
-It's very simple!!
+
 
 ## Requirements
 * Docker version 20.10.x, or later
@@ -34,11 +44,11 @@ It takes more than 20 minutes to pull the Docker image for the first time.
 ```bash
 #Japanese
 curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"案ずるより産むが易し", "lang": "ja_JP", "extentInfoJson":"{}"}]}
+{"knowledgeList":[{"sentence":"案ずるより産むが易し", "lang": "ja_JP", "extentInfoJson":"{}", "isNegativeSentence": false}]}
 ' http://localhost:9002/regist
 #English
 curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"The answer is blown'\''in the wind.", "lang": "en_US", "extentInfoJson":"{}"}]}
+{"knowledgeList":[{"sentence":"The answer is blown'\''in the wind.", "lang": "en_US", "extentInfoJson":"{}, "isNegativeSentence": false"}]}
 ' http://localhost:9002/regist
 ```
 Try accessing http://localhost:7474 in your browser.
@@ -68,7 +78,7 @@ as follows
 | rangeExpressions | 範囲表現 | Same as Japanese |
 | categories | カテゴリ（KNPのfeatureのカテゴリ参照） | - |
 | domains | ドメイン（KNPのfeatureのドメイン参照） | - |
-| isDenial | 否定表現を表すフラグ true/false (KNPのfeatureの否定参照) |　Negatives analyzed by [Core NLP's Depedency](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf)　|
+| isDenialWord | 否定表現を表すフラグ true/false (KNPのfeatureの否定参照) |　Negatives analyzed by [Core NLP's Depedency](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf)　|
 | isConditionalConnection | 条件節及びそれに類する節を表すフラグ（KNPのfeatureの条件節候補参照） | Conditional clause analyzed by [Depedency of CoreNLP](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf) |
 | normalizedNameYomi　| 文節の正規化表現の読み仮名 | - |
 | surfaceYomi | 文節の表層の読み仮名 | - |
