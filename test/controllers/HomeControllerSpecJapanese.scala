@@ -44,7 +44,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
   "HomeController POST(japanese knowledge)" should {
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "lang": "ja_JP", "extentInfoJson":"{}"}]}"""
+      val jsonStr:String = """{"knowledgeList":[{"sentence":"これはテストです。", "lang": "ja_JP", "extentInfoJson":"{}", "isNegativeSentence":false}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
@@ -56,4 +56,64 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       assert(queryResult.hasNext())
     }
   }
+
+  "HomeController POST(japanese KnowledgeSentenceSet)" should {
+    "returns an appropriate response" in {
+      val controller: HomeController = inject[HomeController]
+      val jsonStr:String = """{
+                             |	"premiseList": [
+                             |		{
+                             |			"sentence": "これはテストの前提1です。",
+                             |			"lang": "ja_JP",
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
+                             |		},
+                             |		{
+                             |			"sentence": "これはテストの前提2です。",
+                             |			"lang": "ja_JP",
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
+                             |		}
+                             |	],
+                             |	"premiseLogicRelation": [
+                             |		{
+                             |			"operator": "AND",
+                             |			"sourceIndex": 0,
+                             |			"destinationIndex": 1
+                             |		}
+                             |	],
+                             |	"claimList": [
+                             |		{
+                             |			"sentence": "これはテストの主張1です。",
+                             |			"lang": "ja_JP",
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
+                             |		},
+                             |		{
+                             |			"sentence": "これはテストの主張2です。",
+                             |			"lang": "ja_JP",
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence":false
+                             |		}
+                             |	],
+                             |	"claimLogicRelation": [
+                             |		{
+                             |			"operator": "OR",
+                             |			"sourceIndex": 0,
+                             |			"destinationIndex": 1
+                             |		}
+                             |	]
+                             |}""".stripMargin
+      val fr = FakeRequest(POST, "/registByKnowledgeSentenceSet")
+        .withHeaders("Content-type" -> "application/json")
+        .withJsonBody(Json.parse(jsonStr))
+      val result= call(controller.registByKnowledgeSentenceSet(), fr)
+      status(result) mustBe OK
+      Thread.sleep(60000)
+      val query = "MATCH x=(:ClaimNode{surface:'主張２です。'})<-[:LogicEdge{operator:'OR'}]-(:ClaimNode{surface:'主張１です。'})<-[:LogicEdge{operator:'IMP'}]-(:PremiseNode{surface:'前提１です。'})-[:LogicEdge{operator:'AND'}]->(:PremiseNode{surface:'前提２です。'}) return x"
+      val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
+      assert(queryResult.hasNext())
+    }
+  }
+
 }

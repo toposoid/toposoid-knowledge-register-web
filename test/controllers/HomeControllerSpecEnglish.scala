@@ -42,18 +42,86 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
   "HomeController POST(english knowledge)" should {
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}"}]}"""
+      val jsonStr: String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}", "isNegativeSentence":false}]}"""
       val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
-      val result= call(controller.regist(), fr)
+      val result = call(controller.regist(), fr)
       status(result) mustBe OK
       Thread.sleep(60000)
       val query = "MATCH x = (:ClaimNode{surface:'This'})-[:ClaimEdge]->(:ClaimNode{surface:'is'})<-[:ClaimEdge]-(:ClaimNode{surface:'Test'})<-[:ClaimEdge]-(:ClaimNode{surface:'a'})　return x"
-      val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
+      val queryResult: Result = Neo4JAccessor.executeQueryAndReturn(query)
       assert(queryResult.hasNext())
 
     }
   }
 
+  "HomeController POST(english KnowledgeSentenceSet)" should {
+    "returns an appropriate response" in {
+      val controller: HomeController = inject[HomeController]
+      val jsonStr: String =
+        """{
+          |	"premiseList": [
+          |		{
+          |			"sentence": "This is premise-1.",
+          |			"lang": "en_US",
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
+          |		},
+          |		{
+          |			"sentence": "This is premise-2.",
+          |			"lang": "en_US",
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
+          |		}
+          |	],
+          |	"premiseLogicRelation": [
+          |		{
+          |			"operator": "AND",
+          |			"sourceIndex": 0,
+          |			"destinationIndex": 1
+          |		}
+          |	],
+          |	"claimList": [
+          |		{
+          |			"sentence": "This is claim-1.",
+          |			"lang": "en_US",
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
+          |		},
+          |		{
+          |			"sentence": "This is claim-2.",
+          |			"lang": "en_US",
+          |			"extentInfoJson": "{}",
+          |     "isNegativeSentence":false
+          |		}
+          |	],
+          |	"claimLogicRelation": [
+          |		{
+          |			"operator": "OR",
+          |			"sourceIndex": 0,
+          |			"destinationIndex": 1
+          |		}
+          |	]
+          |}""".stripMargin
+      val fr = FakeRequest(POST, "/registByKnowledgeSentenceSet")
+        .withHeaders("Content-type" -> "application/json")
+        .withJsonBody(Json.parse(jsonStr))
+      val result = call(controller.registByKnowledgeSentenceSet(), fr)
+      status(result) mustBe OK
+
+      Thread.sleep(60000)
+      val query = "MATCH x=(:ClaimNode{surface:'claim-1'})-[:ClaimEdge]-(:ClaimNode)-[:LogicEdge{operator:'OR'}]-(:ClaimNode)-[:ClaimEdge]-(:ClaimNode{surface:'claim-2'}) return x"
+      val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
+      assert(queryResult.hasNext())
+      val query2 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:PremiseEdge]-(:PremiseNode)-[:LogicEdge{operator:'AND'}]-(:PremiseNode)-[:PremiseEdge]-(:PremiseNode{surface:'premise-2'}) return x"
+      val queryResult2:Result = Neo4JAccessor.executeQueryAndReturn(query2)
+      assert(queryResult2.hasNext())
+      val query3 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:PremiseEdge]-(:PremiseNode)-[:LogicEdge{operator:'IMP'}]-(:ClaimNode)-[:ClaimEdge]-(:ClaimNode{surface:'claim-1'}) return x"
+      val queryResult3:Result = Neo4JAccessor.executeQueryAndReturn(query3)
+      assert(queryResult3.hasNext())
+
+    }
+
+  }
 }
