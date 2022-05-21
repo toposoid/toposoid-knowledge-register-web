@@ -17,7 +17,7 @@ Or
 
 | Japanse | English |
 | ------------- | ------------- | 
-| <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169641450-8aa73417-76ce-4c72-9811-fa6f0274ddfd.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169641934-c173b038-1331-4dde-ac3b-bf22308cb041.png"> |
+| <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169641450-8aa73417-76ce-4c72-9811-fa6f0274ddfd.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169642106-1d88d7a5-3e6c-4149-958c-f2937c794028.png"> |
 
 If you want to specify Premise and Claim respectively, this may be good.
 
