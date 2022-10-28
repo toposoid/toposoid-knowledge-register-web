@@ -20,6 +20,7 @@ import akka.actor.{Actor, Props}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.typesafe.scalalogging.LazyLogging
+import io.jvm.uuid.UUID
 
 object RegistKnowledgeActor {
   def props = Props[RegistKnowledgeActor]
@@ -43,7 +44,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
   def receive = {
     case RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge]) => {
       try {
-        Sentence2Neo4jTransformer.createGraphAuto(knowledgeList)
+        Sentence2Neo4jTransformer.createGraphAuto((1 to knowledgeList.size).map(x => UUID.random.toString).toList, knowledgeList)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
@@ -53,7 +54,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
     }
     case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet) => {
       try {
-        Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSet)
+        Sentence2Neo4jTransformer.createGraph(UUID.random.toString, knowledgeSentenceSet)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
