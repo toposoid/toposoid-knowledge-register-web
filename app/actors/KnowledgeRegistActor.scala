@@ -19,6 +19,7 @@ package actors
 import akka.actor.{Actor, Props}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
+import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
 import com.typesafe.scalalogging.LazyLogging
 import io.jvm.uuid.UUID
 
@@ -44,7 +45,9 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
   def receive = {
     case RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge]) => {
       try {
-        Sentence2Neo4jTransformer.createGraphAuto((1 to knowledgeList.size).map(x => UUID.random.toString).toList, knowledgeList)
+        val propositionIds = (1 to knowledgeList.size).map(x => UUID.random.toString).toList
+        Sentence2Neo4jTransformer.createGraphAuto(propositionIds, knowledgeList)
+        FeatureVectorizer.createVector(propositionIds, knowledgeList)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
@@ -54,7 +57,9 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
     }
     case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet) => {
       try {
-        Sentence2Neo4jTransformer.createGraph(UUID.random.toString, knowledgeSentenceSet)
+        val propositionIds =UUID.random.toString
+        Sentence2Neo4jTransformer.createGraph(propositionIds, knowledgeSentenceSet)
+        FeatureVectorizer.createVectorForKnowledgeSet(propositionIds, knowledgeSentenceSet)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
