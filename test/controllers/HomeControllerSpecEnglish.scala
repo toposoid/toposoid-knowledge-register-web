@@ -19,7 +19,9 @@ package controllers
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
 import com.ideal.linked.toposoid.common.ToposoidUtils
-import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorSearchResult}
+import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
+import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
+import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
 import org.neo4j.driver.{Record, Result}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
@@ -42,44 +44,10 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
   override def beforeAll(): Unit = {
     Neo4JAccessor.delete()
   }
-  private def existFeatureVector(propositionId:String, lang:String, sentenceId:String):Boolean ={
-    val json: String = Json.toJson(FeatureVectorId(id = propositionId + "#" + lang + "-s" + sentenceId )).toString()
-    val featureVectorSearchResultJson = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "searchById")
-    val featureVectorSearchResult: FeatureVectorSearchResult = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
-    featureVectorSearchResult.ids.size == 1
-  }
 
-  private def deleteFeatureVector(propositionId:String, lang:String, sentenceId:String):Unit = {
-    val json: String = Json.toJson(FeatureVectorId(id = propositionId + "#" + lang + "-s" + sentenceId )).toString()
-    ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "searchById")
-  }
-
-  private def getPropositionId(queryResult:Result):String = {
-    if(queryResult.hasNext()){
-      val record:Record = queryResult.next()
-      return record.get("x").asPath().nodes.iterator().next().get("propositionId").asString()
-    }
-    ""
-  }
-
-  "HomeController POST(english knowledge)" should {
-    "returns an appropriate response" in {
-      val controller: HomeController = inject[HomeController]
-      val jsonStr: String = """{"knowledgeList":[{"sentence":"This is a Test.", "lang": "en_US", "extentInfoJson":"{}", "isNegativeSentence":false}]}"""
-      val fr = FakeRequest(POST, "/regist")
-        .withHeaders("Content-type" -> "application/json")
-        .withJsonBody(Json.parse(jsonStr))
-      val result = call(controller.regist(), fr)
-      status(result) mustBe OK
-      Thread.sleep(60000)
-      val query = "MATCH x = (:ClaimNode{surface:'This'})-[:ClaimEdge]->(:ClaimNode{surface:'is'})<-[:ClaimEdge]-(:ClaimNode{surface:'Test'})<-[:ClaimEdge]-(:ClaimNode{surface:'a'})　return x"
-      val queryResult: Result = Neo4JAccessor.executeQueryAndReturn(query)
-      assert(queryResult.hasNext())
-      val propositionId:String = getPropositionId(queryResult)
-      assert(existFeatureVector(propositionId, "en_US", "0"))
-      deleteFeatureVector(propositionId, "en_US", "0")
-
-    }
+  private def deleteFeatureVector(id:String):Unit = {
+    val json: String = Json.toJson(FeatureVectorId(id = id)).toString()
+    ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "delete")
   }
 
   "HomeController POST(english KnowledgeSentenceSet)" should {
@@ -130,13 +98,13 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
           |		}
           |	]
           |}""".stripMargin
-      val fr = FakeRequest(POST, "/registByKnowledgeSentenceSet")
+      val fr = FakeRequest(POST, "/regist")
         .withHeaders("Content-type" -> "application/json")
         .withJsonBody(Json.parse(jsonStr))
-      val result = call(controller.registByKnowledgeSentenceSet(), fr)
+      val result = call(controller.regist(), fr)
       status(result) mustBe OK
 
-      Thread.sleep(60000)
+      Thread.sleep(10000)
       val query = "MATCH x=(:ClaimNode{surface:'claim-1'})-[:ClaimEdge]-(:ClaimNode)-[:LogicEdge{operator:'OR'}]-(:ClaimNode)-[:ClaimEdge]-(:ClaimNode{surface:'claim-2'}) return x"
       val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
       assert(queryResult.hasNext())
@@ -146,12 +114,16 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       val query3 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:PremiseEdge]-(:PremiseNode)-[:LogicEdge{operator:'IMP'}]-(:ClaimNode)-[:ClaimEdge]-(:ClaimNode{surface:'claim-1'}) return x"
       val queryResult3:Result = Neo4JAccessor.executeQueryAndReturn(query3)
       assert(queryResult3.hasNext())
-      val propositionId:String = getPropositionId(queryResult)
-      for( sentenceId <- 0 until 4){
-        assert(existFeatureVector(propositionId, "en_US", sentenceId.toString))
-        deleteFeatureVector(propositionId, "en_US", sentenceId.toString)
-      }
 
+      val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
+      for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
+        val vector = FeatureVectorizer.getVector(Knowledge(knowledge.sentence, "en_US", "{}"))
+        val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=conf.getString("TOPOSOID_VALD_SEARCH_NUM_MAX").toInt, radius=(-1.0f), epsilon=0.01f, timeout=50000000000L)).toString()
+        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "search")
+        val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
+        assert(result.ids.size > 0)
+        result.ids.map(deleteFeatureVector(_))
+      }
     }
 
   }

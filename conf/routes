@@ -5,4 +5,4 @@
 
 # An example controller showing a sample home page
 POST    /regist                     controllers.HomeController.regist()
-POST    /registByKnowledgeSentenceSet     controllers.HomeController.registByKnowledgeSentenceSet()
+#POST    /registByKnowledgeSentenceSet     controllers.HomeController.registByKnowledgeSentenceSet()

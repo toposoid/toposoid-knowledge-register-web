@@ -17,7 +17,8 @@
 package actors
 
 import akka.actor.{Actor, Props}
-import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
+import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet, PropositionRelation}
+import com.ideal.linked.toposoid.protocol.model.parser.{KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
 import com.typesafe.scalalogging.LazyLogging
@@ -43,6 +44,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
    * @return
    */
   def receive = {
+    /*
     case RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge]) => {
       try {
         val propositionIds = (1 to knowledgeList.size).map(x => UUID.random.toString).toList
@@ -55,11 +57,19 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
       }
       sender() ! "OK "
     }
+    */
     case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet) => {
       try {
         val propositionIds =UUID.random.toString
-        Sentence2Neo4jTransformer.createGraph(propositionIds, knowledgeSentenceSet)
-        FeatureVectorizer.createVectorForKnowledgeSet(propositionIds, knowledgeSentenceSet)
+        val knowledgeForParserPremise:List[KnowledgeForParser] = knowledgeSentenceSet.premiseList.map(KnowledgeForParser(propositionIds, UUID.random.toString, _))
+        val knowledgeForParserClaim:List[KnowledgeForParser] = knowledgeSentenceSet.claimList.map(KnowledgeForParser(propositionIds, UUID.random.toString, _))
+        val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
+          knowledgeForParserPremise,
+          knowledgeSentenceSet.premiseLogicRelation,
+          knowledgeForParserClaim,
+          knowledgeSentenceSet.claimLogicRelation)
+        Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser)
+        FeatureVectorizer.createVectorForKnowledgeSet(knowledgeSentenceSetForParser)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
@@ -67,6 +77,5 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
       }
       sender() ! "OK "
     }
-
   }
 }
