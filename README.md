@@ -7,19 +7,11 @@ This Microservice registers the results of predicate argument structure analysis
 
 * input
 
-| Japanse | English |
-| ------------- | ------------- |
-| <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169640988-9045f53b-2e92-4ade-9efc-c4de9c91827a.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169640983-23f71563-7df0-452a-9f9d-e5096465c2f3.png"> |
-
-This is simple.
-
-Or
 
 | Japanse | English |
 | ------------- | ------------- | 
 | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169641450-8aa73417-76ce-4c72-9811-fa6f0274ddfd.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169642106-1d88d7a5-3e6c-4149-958c-f2937c794028.png"> |
 
-If you want to specify Premise and Claim respectively, this may be good.
 
 * result
 <img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
