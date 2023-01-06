@@ -69,7 +69,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
           knowledgeForParserClaim,
           knowledgeSentenceSet.claimLogicRelation)
         Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser)
-        FeatureVectorizer.createVectorForKnowledgeSet(knowledgeSentenceSetForParser)
+        FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
