@@ -44,6 +44,9 @@ jobs:
             docker-compose -f docker-compose-workflow.yml rm -fsv toposoid-sentence-parser-japanese-web
             docker rmi --force toposoid/toposoid-sentence-parser-japanese-web:0.4-SNAPSHOT-workflow
             docker rmi --force toposoid/toposoid-common-nlp-japanese-web:0.4-SNAPSHOT-workflow
+            docker-compose -f docker-compose-workflow.yml rm -fsv vald
+            rm -f vald-config/backup/*
+            docker-compose -f docker-compose-workflow.yml up -d vald
             docker images
             docker system prune -f
             docker volume prune -f

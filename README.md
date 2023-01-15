@@ -35,14 +35,135 @@ docker-compose up -d
 It takes more than 20 minutes to pull the Docker image for the first time.
 ## Usage
 ```bash
-#Japanese
-curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"案ずるより産むが易し", "lang": "ja_JP", "extentInfoJson":"{}", "isNegativeSentence": false}]}
-' http://localhost:9002/regist
-#English
-curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"Our life is our art.", "lang": "en_US", "extentInfoJson":"{}, "isNegativeSentence": false"}]}
-' http://localhost:9002/regist
+#-----------------------------------------
+#Case1 A Simple Sentence in Japanese
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d '{
+    "premiseList": [],
+    "premiseLogicRelation": [],
+    "claimList": [
+        {
+            "sentence": "案ずるより産むが易し",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": []
+}' http://localhost:9002/regist
+
+#-----------------------------------------
+#Case2 Multiple Sentences in Japanese
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d {
+    "premiseList": [
+        {
+            "sentence": "これはテストの前提1です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "これはテストの前提2です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "premiseLogicRelation": [
+        {
+            "operator": "AND",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ],
+    "claimList": [
+        {
+            "sentence": "これはテストの主張1です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "これはテストの主張2です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": [
+        {
+            "operator": "OR",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ]
+}' http://localhost:9002/regist
+
+#-----------------------------------------
+#Case3 A Simple Sentence in English
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d '{
+    "premiseList": [],
+    "premiseLogicRelation": [],
+    "claimList": [
+        {
+            "sentence": "Our life is our art.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": []
+}' http://localhost:9002/regist
+
+#-----------------------------------------
+#Case4 Multiple Sentences in English
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d '{
+    "premiseList": [
+        {
+            "sentence": "This is premise-1.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "This is premise-2.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "premiseLogicRelation": [
+        {
+            "operator": "AND",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ],
+    "claimList": [
+        {
+            "sentence": "This is claim-1.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "This is claim-2.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": [
+        {
+            "operator": "OR",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ]
+}' http://localhost:9002/regist
 ```
 Try accessing http://localhost:7474 in your browser.
 You will be able to see the data you registered from the API.
