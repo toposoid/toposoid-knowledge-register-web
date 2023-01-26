@@ -1,4 +1,4 @@
-FROM toposoid/toposoid-scala-lib:0.4-SNAPSHOT
+FROM toposoid/toposoid-scala-lib:0.4
 
 WORKDIR /app
 ARG TARGET_BRANCH
@@ -12,7 +12,7 @@ RUN git clone https://github.com/toposoid/toposoid-knowledge-register-web.git \
 && sbt playUpdateSecret 1> /dev/null \
 && sbt dist \
 && cd /app/toposoid-knowledge-register-web/target/universal \
-&& unzip -o toposoid-knowledge-register-web-0.4-SNAPSHOT.zip
+&& unzip -o toposoid-knowledge-register-web-0.4.zip
 
 COPY ./docker-entrypoint.sh /app/
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
