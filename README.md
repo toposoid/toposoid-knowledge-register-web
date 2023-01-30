@@ -25,7 +25,7 @@ This Microservice registers the results of predicate argument structure analysis
 * docker-compose version 1.22.x
 
 ## Memory requirements
-* Required: at least 8GB of RAM (The maximum heap memory size of the JVM is set to 6G (Application: 4G, Neo4J: 2G))
+* Required: at least 20GB of RAM
 * Required: 10G or higher　of HDD
 
 ## Setup
