@@ -7,19 +7,11 @@ This Microservice registers the results of predicate argument structure analysis
 
 * input
 
-| Japanse | English |
-| ------------- | ------------- |
-| <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169640988-9045f53b-2e92-4ade-9efc-c4de9c91827a.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169640983-23f71563-7df0-452a-9f9d-e5096465c2f3.png"> |
-
-This is simple.
-
-Or
 
 | Japanse | English |
 | ------------- | ------------- | 
 | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169641450-8aa73417-76ce-4c72-9811-fa6f0274ddfd.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169642106-1d88d7a5-3e6c-4149-958c-f2937c794028.png"> |
 
-If you want to specify Premise and Claim respectively, this may be good.
 
 * result
 <img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
@@ -33,24 +25,162 @@ If you want to specify Premise and Claim respectively, this may be good.
 * docker-compose version 1.22.x
 
 ## Memory requirements
-* Required: at least 8GB of RAM (The maximum heap memory size of the JVM is set to 6G (Application: 4G, Neo4J: 2G))
+* Required: at least 20GB of RAM
 * Required: 10G or higher　of HDD
 
 ## Setup
 ```bash
-docker-compose up -d
+rm -f vald-config/backup/* && docker-compose up -d
 ```
-It takes more than 20 minutes to pull the Docker image for the first time.
+* It takes more than 20 minutes to pull the Docker image for the first time.
+* **The docker-compose.yml configuration in this repository does not take into account vald and neo4j persistence.**
+* If vald does not start due to an error, commenting out the following part in docker-compose.yml may work.
+```yml
+  vald:
+    image: vdaas/vald-agent-ngt:v1.6.3
+    #user: 1000:1000
+    volumes:
+      - ./vald-config:/etc/server
+      #- /etc/passwd:/etc/passwd:ro
+      #- /etc/group:/etc/group:ro
+    networks:
+      app_net:
+        ipv4_address: 172.30.0.10
+    ports:
+      - 8081:8081
+```
+
 ## Usage
 ```bash
-#Japanese
-curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"案ずるより産むが易し", "lang": "ja_JP", "extentInfoJson":"{}", "isNegativeSentence": false}]}
-' http://localhost:9002/regist
-#English
-curl -X POST -H "Content-Type: application/json" -d '
-{"knowledgeList":[{"sentence":"Our life is our art.", "lang": "en_US", "extentInfoJson":"{}, "isNegativeSentence": false"}]}
-' http://localhost:9002/regist
+#-----------------------------------------
+#Case1 A Simple Sentence in Japanese
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d '{
+    "premiseList": [],
+    "premiseLogicRelation": [],
+    "claimList": [
+        {
+            "sentence": "案ずるより産むが易し",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": []
+}' http://localhost:9002/regist
+
+#-----------------------------------------
+#Case2 Multiple Sentences in Japanese
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d {
+    "premiseList": [
+        {
+            "sentence": "これはテストの前提1です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "これはテストの前提2です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "premiseLogicRelation": [
+        {
+            "operator": "AND",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ],
+    "claimList": [
+        {
+            "sentence": "これはテストの主張1です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "これはテストの主張2です。",
+            "lang": "ja_JP",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": [
+        {
+            "operator": "OR",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ]
+}' http://localhost:9002/regist
+
+#-----------------------------------------
+#Case3 A Simple Sentence in English
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d '{
+    "premiseList": [],
+    "premiseLogicRelation": [],
+    "claimList": [
+        {
+            "sentence": "Our life is our art.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": []
+}' http://localhost:9002/regist
+
+#-----------------------------------------
+#Case4 Multiple Sentences in English
+#-----------------------------------------
+curl -X POST -H "Content-Type: application/json" -d '{
+    "premiseList": [
+        {
+            "sentence": "This is premise-1.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "This is premise-2.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "premiseLogicRelation": [
+        {
+            "operator": "AND",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ],
+    "claimList": [
+        {
+            "sentence": "This is claim-1.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        },
+        {
+            "sentence": "This is claim-2.",
+            "lang": "en_US",
+            "extentInfoJson": "{}",
+            "isNegativeSentence": false
+        }
+    ],
+    "claimLogicRelation": [
+        {
+            "operator": "OR",
+            "sourceIndex": 0,
+            "destinationIndex": 1
+        }
+    ]
+}' http://localhost:9002/regist
 ```
 Try accessing http://localhost:7474 in your browser.
 You will be able to see the data you registered from the API.

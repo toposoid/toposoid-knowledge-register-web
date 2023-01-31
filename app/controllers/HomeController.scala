@@ -54,6 +54,8 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
    * If the execution is successful, it returns a response at that point.
    * @return
    */
+/*
+  @deprecated
   def regist()  = Action(parse.json) { request =>
 
     try{
@@ -68,8 +70,8 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
       }
     }
   }
-
-  def registByKnowledgeSentenceSet()  = Action(parse.json) { request =>
+*/
+  def regist()  = Action(parse.json) { request =>
     try{
       val json = request.body
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
