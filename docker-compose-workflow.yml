@@ -19,7 +19,6 @@ services:
       - COMMON_NLP_JP_WEB_HOST=172.30.0.5
       - COMMON_NLP_EN_WEB_HOST=172.30.0.7
       - TOPOSOID_VALD_ACCESSOR_HOST=172.30.0.9
-      - TOPOSOID_VALD_SEARCH_NUM_MAX=3
       - PLAY_HTTP_PORT=9002
     networks:
       app_net:
@@ -113,7 +112,7 @@ services:
     ports:
       - 9010:9010
   vald:
-    image: vdaas/vald-agent-ngt:v1.6.3
+    image: vdaas/vald-agent-ngt:v1.7.6
     user: 1000:1000
     volumes:
       - ./vald-config:/etc/server
