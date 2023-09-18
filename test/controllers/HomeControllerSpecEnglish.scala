@@ -19,7 +19,7 @@ package controllers
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
 import com.ideal.linked.toposoid.common.ToposoidUtils
-import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
+import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
 import org.neo4j.driver.{Record, Result}
@@ -45,8 +45,8 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
     Neo4JAccessor.delete()
   }
 
-  private def deleteFeatureVector(id:String):Unit = {
-    val json: String = Json.toJson(FeatureVectorId(id = id)).toString()
+  private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier): Unit = {
+    val json: String = Json.toJson(featureVectorIdentifier).toString()
     ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "delete")
   }
 
@@ -118,11 +118,11 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
       for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
         val vector = FeatureVectorizer.getVector(Knowledge(knowledge.sentence, "en_US", "{}"))
-        val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1, radius=(-1.0f), epsilon=0.01f, timeout=50000000000L)).toString()
+        val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1)).toString()
         val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "search")
         val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
         assert(result.ids.size > 0)
-        result.ids.map(x => deleteFeatureVector(x.toString))
+        result.ids.map(x => deleteFeatureVector(x))
       }
     }
 
