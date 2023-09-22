@@ -49,7 +49,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
 
   private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier):Unit = {
     val json: String = Json.toJson(featureVectorIdentifier).toString()
-    ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "delete")
+    ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_VECTORDB_ACCESSOR_PORT"), "delete")
   }
 
   "HomeController POST(japanese KnowledgeSentenceSet)" should {
@@ -113,7 +113,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
         val vector = FeatureVectorizer.getVector(Knowledge(knowledge.sentence, "ja_JP", "{}"))
         val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1)).toString()
-        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "search")
+        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_VECTORDB_ACCESSOR_PORT"), "search")
         val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
         assert(result.ids.size > 0)
         result.ids.map(x => deleteFeatureVector(x))
