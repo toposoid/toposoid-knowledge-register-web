@@ -18,8 +18,9 @@ package controllers
 
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
-import com.ideal.linked.toposoid.common.ToposoidUtils
+import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, ToposoidUtils}
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
+import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
 import com.ideal.linked.toposoid.knowledgebase.nlp.model.{FeatureVector, SingleSentence}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
@@ -42,14 +43,24 @@ import scala.concurrent.duration.Duration
  */
 class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerTest with Injecting {
 
-
   override def beforeAll(): Unit = {
     Neo4JAccessor.delete()
   }
 
-  private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier):Unit = {
+  private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier, featureType: FeatureType):Unit = {
     val json: String = Json.toJson(featureVectorIdentifier).toString()
-    ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_VECTORDB_ACCESSOR_PORT"), "delete")
+    if(featureType.equals(SENTENCE)){
+      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "delete")
+    }else if(featureType.equals(IMAGE)){
+      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "delete")
+    }
+  }
+
+  private def getImageVector(url: String): FeatureVector = {
+    val singleImage = SingleImage(url)
+    val json: String = Json.toJson(singleImage).toString()
+    val featureVectorJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_HOST"), conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT"), "getFeatureVector")
+    Json.parse(featureVectorJson).as[FeatureVector]
   }
 
   "HomeController POST(japanese KnowledgeSentenceSet)" should {
@@ -61,13 +72,36 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
                              |			"sentence": "これはテストの前提1です。",
                              |			"lang": "ja_JP",
                              |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence":false
+                             |      "isNegativeSentence": false,
+                             |      "knowledgeForImages": []
                              |		},
                              |		{
                              |			"sentence": "これはテストの前提2です。",
                              |			"lang": "ja_JP",
                              |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence":false
+                             |      "isNegativeSentence": false,
+                             |      "knowledgeForImages": []
+                             |		},
+                             |		{
+                             |			"sentence": "猫が２匹います。",
+                             |			"lang": "ja_JP",
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence": false,
+                             |      "knowledgeForImages":[{
+                             |                             "id": "",
+                             |                             "imageReference": {
+                             |                               "reference": {
+                             |                                      "url": "",
+                             |                                      "surface": "猫が",
+                             |                                      "surfaceIndex": 0,
+                             |                                      "isWholeSentence": false,
+                             |                                      "originalUrlOrReference": "http://images.cocodataset.org/val2017/000000039769.jpg"},
+                             |                               "x": 27,
+                             |                               "y": 41,
+                             |                               "weight": 287,
+                             |                               "height": 435
+                             |                               }
+                             |                            }]
                              |		}
                              |	],
                              |	"premiseLogicRelation": [
@@ -82,14 +116,38 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
                              |			"sentence": "これはテストの主張1です。",
                              |			"lang": "ja_JP",
                              |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence":false
+                             |      "isNegativeSentence": false,
+                             |      "knowledgeForImages": []
                              |		},
                              |		{
                              |			"sentence": "これはテストの主張2です。",
                              |			"lang": "ja_JP",
                              |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence":false
+                             |      "isNegativeSentence": false,
+                             |      "knowledgeForImages": []
+                             |		},
+                             |		{
+                             |			"sentence": "犬が1匹います。",
+                             |			"lang": "ja_JP",
+                             |			"extentInfoJson": "{}",
+                             |      "isNegativeSentence": false,
+                             |      "knowledgeForImages":[{
+                             |                             "id": "",
+                             |                             "imageReference": {
+                             |                               "reference": {
+                             |                                      "url": "",
+                             |                                      "surface": "犬が",
+                             |                                      "surfaceIndex": 0,
+                             |                                      "isWholeSentence": false,
+                             |                                      "originalUrlOrReference": "http://images.cocodataset.org/train2017/000000428746.jpg"},
+                             |                               "x": 435,
+                             |                               "y": 227,
+                             |                               "weight": 91,
+                             |                               "height": 69
+                             |                               }
+                             |                            }]
                              |		}
+                             |
                              |	],
                              |	"claimLogicRelation": [
                              |		{
@@ -108,15 +166,36 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       val query = "MATCH x=(:ClaimNode{surface:'主張２です。'})<-[:LogicEdge{operator:'OR'}]-(:ClaimNode{surface:'主張１です。'})<-[:LogicEdge{operator:'IMP'}]-(:PremiseNode{surface:'前提１です。'})-[:LogicEdge{operator:'AND'}]->(:PremiseNode{surface:'前提２です。'}) return x"
       val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
       assert(queryResult.hasNext())
+      val result2: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t")
+      assert(result2.hasNext)
+      val urlCat = result2.next().get("s").get("url").asString()
+      val result3: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t")
+      assert(result3.hasNext)
+      val urlDog = result3.next().get("s").get("url").asString()
 
       val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
+
       for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
-        val vector = FeatureVectorizer.getVector(Knowledge(knowledge.sentence, "ja_JP", "{}"))
+        val vector = FeatureVectorizer.getSentenceVector(Knowledge(knowledge.sentence, "ja_JP", "{}"))
         val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1)).toString()
-        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_VECTORDB_ACCESSOR_PORT"), "search")
+        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "search")
         val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
-        assert(result.ids.size > 0)
-        result.ids.map(x => deleteFeatureVector(x))
+        assert(result.ids.size > 0 && result.similarities.head > 0.999)
+        result.ids.map(x => deleteFeatureVector(x, SENTENCE))
+
+        knowledge.knowledgeForImages.foreach(x => {
+          val url:String = x.imageReference.reference.surface match {
+            case "猫が" => urlCat
+            case "犬が" => urlDog
+            case _ => "BAD URL"
+          }
+          val vector = this.getImageVector(url)
+          val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = 1)).toString()
+          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search")
+          val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
+          assert(result.ids.size > 0 && result.similarities.head > 0.999)
+          result.ids.map(x => deleteFeatureVector(x, IMAGE))
+        })
       }
     }
   }
