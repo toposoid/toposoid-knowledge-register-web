@@ -77,7 +77,7 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
 
       (knowledgeRegistActor ? RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet))
-      Ok({"\"result\":\"OK\""}).as(JSON)
+      Ok(Json.obj("status" ->"Ok", "message" -> ""))
     }catch{
       case e: Exception => {
         logger.error(e.toString(), e)
