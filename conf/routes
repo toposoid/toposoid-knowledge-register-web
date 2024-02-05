@@ -4,4 +4,5 @@
 # ~~~~
 
 # An example controller showing a sample home page
++ nocsrf
 POST    /regist                     controllers.HomeController.regist()
