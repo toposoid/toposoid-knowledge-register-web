@@ -1,17 +1,9 @@
 version: '3'
-networks:
-  app_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.30.0.0/24
-
 services:
   toposoid-knowledge-register-web:
-    image: toposoid/toposoid-knowledge-register-web:0.5-SNAPSHOT-lowspec
+    image: toposoid/toposoid-knowledge-register-web:0.5-SNAPSHOT
     environment:
-      - PRIVATE_IP_ADDRESS=toposoid-knowledge-register-web
+      - PRIVATE_IP_ADDRESS=localhost
       - TOPOSOID_GRAPHDB_HOST=neo4j
       - TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST=toposoid-sentence-parser-japanese-web
       - TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT=9001
@@ -30,51 +22,53 @@ services:
       - TOPOSOID_CONTENTS_ADMIN_HOST=toposoid-contents-admin-web
       - TOPOSOID_CONTENTS_ADMIN_PORT=9012
       - PLAY_HTTP_PORT=9002
-      -
+    ports:
+      - 9002:9002
   toposoid-sentence-parser-japanese-web:
-    image: toposoid/toposoid-sentence-parser-japanese-web:0.5-SNAPSHOT-lowspec
+    image: toposoid/toposoid-sentence-parser-japanese-web:0.5-SNAPSHOT
+    tty: true
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-sentence-parser-japanese-web
       - PLAY_HTTP_PORT=9001
     ports:
       - 9001:9001
   toposoid-common-nlp-japanese-web:
-    image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT-lowspec
+    image: toposoid/toposoid-common-nlp-japanese-web:0.5-SNAPSHOT
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-common-nlp-japanese-web
       - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_JP=0.52
       - TOPOSOID_SYNONYM_VERB_SIMILARITY_THRESHHOLD_JP=0.52
       - TOPOSOID_WORD2VEC_SIMILARITY_THRESHHOLD_JP=0.68
-      - TOPOSOID_CHIVE_MODEL_VERSION=chive-1.2-mc90.kv
-      - TOPOSOID_SENTENCEBERT_MODEL_JP=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - TOPOSOID_CHIVE_MODEL_VERSION=chive-1.2-mc15.kv
+      - TOPOSOID_SENTENCEBERT_MODEL_JP=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
       - SENTENCE_TRANSFORMERS_HOME=./models
       - PLAY_HTTP_PORT=9006
     ports:
       - 9006:9006
   toposoid-sentence-parser-english-web:
-    image: toposoid/toposoid-sentence-parser-english-web:0.5-SNAPSHOT-lowspec
+    image: toposoid/toposoid-sentence-parser-english-web:0.5-SNAPSHOT
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-sentence-parser-english-web
       - PLAY_HTTP_PORT=9007
       - TOPOSOID_CORENLP_HOST=corenlp
-      - TOPOSOID_PARSER_SPACY_MODEL_EN=en_core_web_md
+      - TOPOSOID_PARSER_SPACY_MODEL_EN=en_core_web_lg
     ports:
       - 9007:9007
   toposoid-common-nlp-english-web:
-    image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT-lowspec
+    image: toposoid/toposoid-common-nlp-english-web:0.5-SNAPSHOT
     environment:
       - PRIVATE_IP_ADDRESS=toposoid-common-nlp-english-web
       - TOPOSOID_SYNONYM_NOUN_SIMILARITY_THRESHHOLD_EN=0.52
       - TOPOSOID_SYNONYM_VERB_SIMILARITY_THRESHHOLD_EN=0.52
       - TOPOSOID_WORD2VEC_SIMILARITY_THRESHHOLD_EN=0.78
-      - TOPOSOID_SPACY_MODEL_EN=en_core_web_md
-      - TOPOSOID_SENTENCEBERT_MODEL_EN=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-      - TOPOSOID_SENTENCE_TRANSFORMERS_HOME=./models
+      - TOPOSOID_SPACY_MODEL_EN=en_core_web_lg
+      - TOPOSOID_SENTENCEBERT_MODEL_EN=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+      - SENTENCE_TRANSFORMERS_HOME=./models
       - PLAY_HTTP_PORT=9008
     ports:
       - 9008:9008
   corenlp:
-    image: toposoid/corenlp:3.4.2-lowspec
+    image: toposoid/corenlp:3.4.2
     ports:
       - 9000:9000
   neo4j:
@@ -102,11 +96,11 @@ services:
       - 9012:9012
 
   toposoid-common-image-recognition-web:
-    image: toposoid/toposoid-common-image-recognition-web:0.5-SNAPSHOT-lowspec
+    image: toposoid/toposoid-common-image-recognition-web:0.5-SNAPSHOT
     environment:
       - TOPOSOID_IMAGE_RECOGNITION_VIT_MODEL=google/vit-base-patch16-224
       - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_MODEL=apple/mobilevit-small
-      - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_USE=1      -
+      - TOPOSOID_IMAGE_RECOGNITION_MOBILE_VIT_USE=0
     ports:
       - 9013:9013
 
