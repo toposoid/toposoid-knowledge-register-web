@@ -13,15 +13,23 @@ This Microservice registers the results of predicate argument structure analysis
 |<img width="748" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/17ec2390-fe21-41d4-a028-0ecf0760a58d">|<img width="747" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/e95b194d-49d2-49b8-958c-2ce6e30f5243">|
 
 * result
-<img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
-
-
-
+<img width="1597" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/b18a893f-97ab-49fc-aa32-bb5d322274c0">
 
 
 ## Requirements
 * Docker version 20.10.x, or later
 * docker-compose version 1.22.x
+* The following microservices must be running
+  * toposoid/toposoid-sentence-parser-japanese-web
+  * toposoid/toposoid-sentence-parser-english-web
+  * toposoid/toposoid-common-nlp-japanese-web
+  * toposoid/toposoid-common-nlp-english-web
+  * toposoid-common-image-recognition-web
+  * toposoid/toposoid-contents-admin-web
+  * toposoid/data-accessor-weaviate-web
+  * semitechnologies/weaviate
+  * neo4j
+
 
 ## Recommended Environment For Standalone
 * Required: at least 16GB of RAM
@@ -237,7 +245,7 @@ can.
 Try accessing http://localhost:7474 in your browser.
 You will be able to see the data you registered from the API.
 as follows
-<img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
+<img width="1597" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/b18a893f-97ab-49fc-aa32-bb5d322274c0">
 
 
 ## Note
