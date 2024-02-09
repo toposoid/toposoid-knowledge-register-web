@@ -100,7 +100,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
                              |                                      "originalUrlOrReference": "http://images.cocodataset.org/val2017/000000039769.jpg"},
                              |                               "x": 27,
                              |                               "y": 41,
-                             |                               "weight": 287,
+                             |                               "width": 287,
                              |                               "height": 435
                              |                               }
                              |                            }]
@@ -144,7 +144,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
                              |                                      "originalUrlOrReference": "http://images.cocodataset.org/train2017/000000428746.jpg"},
                              |                               "x": 435,
                              |                               "y": 227,
-                             |                               "weight": 91,
+                             |                               "width": 91,
                              |                               "height": 69
                              |                               }
                              |                            }]

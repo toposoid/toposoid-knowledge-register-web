@@ -10,7 +10,7 @@ This Microservice registers the results of predicate argument structure analysis
 
 | Japanse | English |
 | ------------- | ------------- | 
-|<img width="541" alt="スクリーンショット 2024-02-07 20 42 21" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/d9e954fe-0672-40a3-9047-fb5cf37fd82a">|<img width="541" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/414be7ba-df76-4cd6-8c05-f6a4d451df08">|
+|<img width="748" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/17ec2390-fe21-41d4-a028-0ecf0760a58d">|<img width="747" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/e95b194d-49d2-49b8-958c-2ce6e30f5243">|
 
 * result
 <img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
@@ -176,6 +176,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
     ]
 }' http://localhost:9002/regist
 ```
+* Images are registered when KnowledgeForImages is set.
+can.
 
 * KnowledgeSentenceSet
 
