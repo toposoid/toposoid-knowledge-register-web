@@ -10,45 +10,37 @@ This Microservice registers the results of predicate argument structure analysis
 
 | Japanse | English |
 | ------------- | ------------- | 
-| <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169641450-8aa73417-76ce-4c72-9811-fa6f0274ddfd.png"> | <img width="400" alt="" src="https://user-images.githubusercontent.com/82787843/169642106-1d88d7a5-3e6c-4149-958c-f2937c794028.png"> |
-
+|<img width="748" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/17ec2390-fe21-41d4-a028-0ecf0760a58d">|<img width="747" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/e95b194d-49d2-49b8-958c-2ce6e30f5243">|
 
 * result
-<img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
-
-
-
+<img width="1597" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/b18a893f-97ab-49fc-aa32-bb5d322274c0">
 
 
 ## Requirements
 * Docker version 20.10.x, or later
 * docker-compose version 1.22.x
+* The following microservices must be running
+  * toposoid/toposoid-sentence-parser-japanese-web
+  * toposoid/toposoid-sentence-parser-english-web
+  * toposoid/toposoid-common-nlp-japanese-web
+  * toposoid/toposoid-common-nlp-english-web
+  * toposoid-common-image-recognition-web
+  * toposoid/toposoid-contents-admin-web
+  * toposoid/data-accessor-weaviate-web
+  * semitechnologies/weaviate
+  * neo4j
 
-## Memory requirements
-* Required: at least 20GB of RAM
-* Required: 10G or higher　of HDD
 
-## Setup
+## Recommended Environment For Standalone
+* Required: at least 16GB of RAM
+* Required: at least 46G of HDD(Total required Docker Image size)
+* Please understand that since we are dealing with large models such as LLM, the Dockerfile size is large and the required machine SPEC is high.
+
+## Setup For Standalone
 ```bash
-rm -f vald-config/backup/* && docker-compose up -d
+docker-compose up 
 ```
 * It takes more than 20 minutes to pull the Docker image for the first time.
-* **The docker-compose.yml configuration in this repository does not take into account vald and neo4j persistence.**
-* If vald does not start due to an error, commenting out the following part in docker-compose.yml may work.
-```yml
-  vald:
-    image: vdaas/vald-agent-ngt:v1.6.3
-    #user: 1000:1000
-    volumes:
-      - ./vald-config:/etc/server
-      #- /etc/passwd:/etc/passwd:ro
-      #- /etc/group:/etc/group:ro
-    networks:
-      app_net:
-        ipv4_address: 172.30.0.10
-    ports:
-      - 8081:8081
-```
 
 ## Usage
 ```bash
@@ -63,7 +55,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "sentence": "案ずるより産むが易し",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         }
     ],
     "claimLogicRelation": []
@@ -78,13 +71,15 @@ curl -X POST -H "Content-Type: application/json" -d {
             "sentence": "これはテストの前提1です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         },
         {
             "sentence": "これはテストの前提2です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         }
     ],
     "premiseLogicRelation": [
@@ -99,13 +94,15 @@ curl -X POST -H "Content-Type: application/json" -d {
             "sentence": "これはテストの主張1です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         },
         {
             "sentence": "これはテストの主張2です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         }
     ],
     "claimLogicRelation": [
@@ -128,7 +125,8 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "sentence": "Our life is our art.",
             "lang": "en_US",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         }
     ],
     "claimLogicRelation": []
@@ -143,13 +141,15 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "sentence": "This is premise-1.",
             "lang": "en_US",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         },
         {
             "sentence": "This is premise-2.",
             "lang": "en_US",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         }
     ],
     "premiseLogicRelation": [
@@ -164,13 +164,15 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "sentence": "This is claim-1.",
             "lang": "en_US",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         },
         {
             "sentence": "This is claim-2.",
             "lang": "en_US",
             "extentInfoJson": "{}",
-            "isNegativeSentence": false
+            "isNegativeSentence": false,
+            "knowledgeForImages": []
         }
     ],
     "claimLogicRelation": [
@@ -182,10 +184,68 @@ curl -X POST -H "Content-Type: application/json" -d '{
     ]
 }' http://localhost:9002/regist
 ```
+* Images are registered when KnowledgeForImages is set.
+can.
+
+* KnowledgeSentenceSet
+
+| name | type                     | explanation   |
+| ------------- |--------------------------|---------------|
+| premiseList | List[Knowledge]          | see Knowledge |
+| premiseLogicRelation | List[PropositionRelation] | see PropositionRelation   |
+| claimList | List[Knowledge] | see Knowledge |
+| claimLogicRelation | List[PropositionRelation]                   | see PropositionRelation |
+
+* Knowledge
+
+| name | type    | explanation                                              |
+| ------------- |---------|----------------------------------------------------------|
+| sentence | String  | sentence                                                 |
+| lang | String  | ja_JP or en_US                                           |
+| extentInfoJson | String  | Additional information can be registered in Json format. |
+| isNegativeSentence | Boolean | Currently fixed to False                                 |
+| knowledgeForImages | List[KnowledgeForImage]  | see KnowledgeForImage                                    |
+
+* PropositionRelation
+
+| name | type   | explanation                                                                       |
+| ------------- |--------|-----------------------------------------------------------------------------------|
+| operator | String | 'AND' 'OR'                                                                        |
+| sourceIndex | Int    | Source for binary operation. Specified by index of premiseList or claimList.      |
+| destinationIndex | Int    | Destination for binary operation. Specified by index of premiseList or claimList. |
+
+* KnowledgeForImage
+
+| name           | type    | explanation                       |
+|----------------|---------|-----------------------------------|
+| id             | String  | Unique id that identifies the image |
+| imageReference | ImageReference  | see ImageReference  |
+
+* ImageReference
+
+| name      | type      | explanation        |
+|-----------|-----------|--------------------|
+| reference | Reference | see Reference     |
+| x         | Int       | x coordinate of image TOP |
+| y         | Int       |  coordinate of image TOP |
+| width     | Int       | Image width |
+| height    | Int       | Image height |
+
+* Reference
+
+| name    | type      | explanation                                                               |
+|---------|-----------|---------------------------------------------------------------------------|
+| url | String | url                                                                       |
+| surface        | String    | Words in the text linked to images                                        |
+| surfaceIndex        | Int       | Index in the sentence                                                     |
+| isWholeSentence   | Boolean   | True if the image is associated with the entire sentence, otherwise False |
+| originalUrlOrReference  | String       | original url                                                              |
+
+
 Try accessing http://localhost:7474 in your browser.
 You will be able to see the data you registered from the API.
 as follows
-<img width="1755" alt="スクリーンショット 2022-01-08 19 31 10" src="https://user-images.githubusercontent.com/82787843/148676414-0e1b0f57-0ed4-4c59-9ecc-66eb07f9bcb8.png">
+<img width="1597" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/b18a893f-97ab-49fc-aa32-bb5d322274c0">
 
 
 ## Note
@@ -219,6 +279,7 @@ as follows
 | extentText | 拡張領域 |Same as Japanese |
 
 The Edge's Information In A Graph Database
+
 | name | content(Japanese) | content(English) |
 | ------------- | ------------- | ------------- |
 | sourceId | 文節間の関係で係受けの子を識別するID | ID of token parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/) |

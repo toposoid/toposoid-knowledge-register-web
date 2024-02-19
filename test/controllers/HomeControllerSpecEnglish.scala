@@ -18,11 +18,13 @@ package controllers
 
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
-import com.ideal.linked.toposoid.common.ToposoidUtils
-import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
+import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, ToposoidUtils}
+import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
+import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
+import com.ideal.linked.toposoid.knowledgebase.nlp.model.FeatureVector
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
-import org.neo4j.driver.{Record, Result}
+import org.neo4j.driver.Result
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
@@ -42,12 +44,25 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
 
 
   override def beforeAll(): Unit = {
+    ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "createSchema")
+    ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "createSchema")
     Neo4JAccessor.delete()
   }
 
-  private def deleteFeatureVector(id:String):Unit = {
-    val json: String = Json.toJson(FeatureVectorId(id = id)).toString()
-    ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "delete")
+  private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier, featureType: FeatureType): Unit = {
+    val json: String = Json.toJson(featureVectorIdentifier).toString()
+    if (featureType.equals(SENTENCE)) {
+      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "delete")
+    } else if (featureType.equals(IMAGE)) {
+      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "delete")
+    }
+  }
+
+  private def getImageVector(url: String): FeatureVector = {
+    val singleImage = SingleImage(url)
+    val json: String = Json.toJson(singleImage).toString()
+    val featureVectorJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_HOST"), conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT"), "getFeatureVector")
+    Json.parse(featureVectorJson).as[FeatureVector]
   }
 
   "HomeController POST(english KnowledgeSentenceSet)" should {
@@ -60,13 +75,36 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
           |			"sentence": "This is premise-1.",
           |			"lang": "en_US",
           |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false
+          |     "isNegativeSentence":false,
+          |     "knowledgeForImages": []
           |		},
           |		{
           |			"sentence": "This is premise-2.",
           |			"lang": "en_US",
           |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false
+          |     "isNegativeSentence":false,
+          |     "knowledgeForImages": []
+          |		},
+          |		{
+          |			"sentence": "There are two cats.",
+          |			"lang": "en_US",
+          |			"extentInfoJson": "{}",
+          |      "isNegativeSentence": false,
+          |      "knowledgeForImages":[{
+          |                             "id": "",
+          |                             "imageReference": {
+          |                               "reference": {
+          |                                      "url": "",
+          |                                      "surface": "cats",
+          |                                      "surfaceIndex": 3,
+          |                                      "isWholeSentence": false,
+          |                                      "originalUrlOrReference": "http://images.cocodataset.org/val2017/000000039769.jpg"},
+          |                               "x": 27,
+          |                               "y": 41,
+          |                               "width": 287,
+          |                               "height": 435
+          |                               }
+          |                            }]
           |		}
           |	],
           |	"premiseLogicRelation": [
@@ -81,13 +119,36 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
           |			"sentence": "This is claim-1.",
           |			"lang": "en_US",
           |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false
+          |     "isNegativeSentence":false,
+          |     "knowledgeForImages": []
           |		},
           |		{
           |			"sentence": "This is claim-2.",
           |			"lang": "en_US",
           |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false
+          |     "isNegativeSentence":false,
+          |     "knowledgeForImages": []
+          |		},
+          |		{
+          |			"sentence": "There is a dog",
+          |			"lang": "en_US",
+          |			"extentInfoJson": "{}",
+          |      "isNegativeSentence": false,
+          |      "knowledgeForImages":[{
+          |                             "id": "",
+          |                             "imageReference": {
+          |                               "reference": {
+          |                                      "url": "",
+          |                                      "surface": "dog",
+          |                                      "surfaceIndex": 3,
+          |                                      "isWholeSentence": false,
+          |                                      "originalUrlOrReference": "http://images.cocodataset.org/train2017/000000428746.jpg"},
+          |                               "x": 435,
+          |                               "y": 227,
+          |                               "width": 91,
+          |                               "height": 69
+          |                               }
+          |                            }]
           |		}
           |	],
           |	"claimLogicRelation": [
@@ -104,25 +165,48 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       val result = call(controller.regist(), fr)
       status(result) mustBe OK
 
-      Thread.sleep(60000)
-      val query = "MATCH x=(:ClaimNode{surface:'claim-1'})-[:ClaimEdge]-(:ClaimNode)-[:LogicEdge{operator:'OR'}]-(:ClaimNode)-[:ClaimEdge]-(:ClaimNode{surface:'claim-2'}) return x"
+      Thread.sleep(40000)
+      val query = "MATCH x=(:ClaimNode{surface:'claim-1'})-[:LocalEdge]-(:ClaimNode)-[:LocalEdge{logicType:'OR'}]-(:ClaimNode)-[:LocalEdge]-(:ClaimNode{surface:'claim-2'}) return x"
       val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
       assert(queryResult.hasNext())
-      val query2 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:PremiseEdge]-(:PremiseNode)-[:LogicEdge{operator:'AND'}]-(:PremiseNode)-[:PremiseEdge]-(:PremiseNode{surface:'premise-2'}) return x"
+      val query2 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:LocalEdge]-(:PremiseNode)-[:LocalEdge{logicType:'AND'}]-(:PremiseNode)-[:LocalEdge]-(:PremiseNode{surface:'premise-2'}) return x"
       val queryResult2:Result = Neo4JAccessor.executeQueryAndReturn(query2)
       assert(queryResult2.hasNext())
-      val query3 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:PremiseEdge]-(:PremiseNode)-[:LogicEdge{operator:'IMP'}]-(:ClaimNode)-[:ClaimEdge]-(:ClaimNode{surface:'claim-1'}) return x"
+      val query3 = "MATCH x=(:PremiseNode{surface:'premise-1'})-[:LocalEdge]-(:PremiseNode)-[:LocalEdge{logicType:'IMP'}]-(:ClaimNode)-[:LocalEdge]-(:ClaimNode{surface:'claim-1'}) return x"
       val queryResult3:Result = Neo4JAccessor.executeQueryAndReturn(query3)
       assert(queryResult3.hasNext())
 
+
+      val queryResult4: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'cats'}) RETURN s, t")
+      assert(queryResult4.hasNext)
+      val urlCat = queryResult4.next().get("s").get("url").asString()
+      val queryResult5: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'dog'}) RETURN s, t")
+      assert(queryResult5.hasNext)
+      val urlDog = queryResult5.next().get("s").get("url").asString()
+
       val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
       for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
-        val vector = FeatureVectorizer.getVector(Knowledge(knowledge.sentence, "en_US", "{}"))
-        val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=conf.getString("TOPOSOID_VALD_SEARCH_NUM_MAX").toInt, radius=(-1.0f), epsilon=0.01f, timeout=50000000000L)).toString()
-        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_VALD_ACCESSOR_HOST"), "9010", "search")
+        val vector = FeatureVectorizer.getSentenceVector(Knowledge(knowledge.sentence, "en_US", "{}"))
+        val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1)).toString()
+        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "search")
         val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
         assert(result.ids.size > 0)
-        result.ids.map(deleteFeatureVector(_))
+        result.ids.map(x => deleteFeatureVector(x, SENTENCE))
+
+        knowledge.knowledgeForImages.foreach(x => {
+          val url: String = x.imageReference.reference.surface match {
+            case "cats" => urlCat
+            case "dog" => urlDog
+            case _ => "BAD URL"
+          }
+          val vector = this.getImageVector(url)
+          val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = 1)).toString()
+          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search")
+          val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
+          assert(result.ids.size > 0 && result.similarities.head > 0.999)
+          result.ids.map(x => deleteFeatureVector(x, IMAGE))
+        })
+
       }
     }
 
