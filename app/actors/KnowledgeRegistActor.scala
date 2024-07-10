@@ -18,12 +18,13 @@ package actors
 
 import akka.actor.{Actor, Props}
 import com.ideal.linked.common.DeploymentConverter.conf
-import com.ideal.linked.toposoid.common.ToposoidUtils
+import com.ideal.linked.toposoid.common.{ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.RegistContentResult
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{ImageReference, Knowledge, KnowledgeForImage, KnowledgeSentenceSet, PropositionRelation, Reference}
 import com.ideal.linked.toposoid.protocol.model.parser.{KnowledgeForParser, KnowledgeSentenceSetForParser}
 import com.ideal.linked.toposoid.sentence.transformer.neo4j.Sentence2Neo4jTransformer
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
+
 import scala.util.{Failure, Success, Try}
 import com.typesafe.scalalogging.LazyLogging
 import io.jvm.uuid.UUID
@@ -32,7 +33,7 @@ import play.api.libs.json.Json
 object RegistKnowledgeActor {
   def props = Props[RegistKnowledgeActor]
   case class RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge])
-  case class RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet)
+  case class RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState)
 }
 
 /**
@@ -63,19 +64,19 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
       sender() ! "OK "
     }
     */
-    case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet) => {
+    case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState) => {
       try {
         val propositionId =UUID.random.toString
         val knowledgeForParserPremise:List[KnowledgeForParser] = knowledgeSentenceSet.premiseList.map(KnowledgeForParser(propositionId, UUID.random.toString, _))
         val knowledgeForParserClaim:List[KnowledgeForParser] = knowledgeSentenceSet.claimList.map(KnowledgeForParser(propositionId, UUID.random.toString, _))
         val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
-          registKnowledgeImages(knowledgeForParserPremise),
+          registKnowledgeImages(knowledgeForParserPremise, transversalState),
           knowledgeSentenceSet.premiseLogicRelation,
-          registKnowledgeImages(knowledgeForParserClaim),
+          registKnowledgeImages(knowledgeForParserClaim, transversalState),
           knowledgeSentenceSet.claimLogicRelation)
 
-        Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser)
-        FeatureVectorizer.createVector(knowledgeSentenceSetForParser)
+        Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
+        FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
@@ -85,7 +86,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
     }
   }
 
-  private def registKnowledgeImages(knowledgeForParsers:List[KnowledgeForParser]):List[KnowledgeForParser] = Try {
+  private def registKnowledgeImages(knowledgeForParsers:List[KnowledgeForParser], transversalState:TransversalState):List[KnowledgeForParser] = Try {
 
     knowledgeForParsers.foldLeft(List.empty[KnowledgeForParser]){
       (acc, x) => {
@@ -95,7 +96,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
           val knowledgeForImageJson: String = ToposoidUtils.callComponent(json,
               conf.getString("TOPOSOID_CONTENTS_ADMIN_HOST"),
               conf.getString("TOPOSOID_CONTENTS_ADMIN_PORT"),
-            "registImage")
+            "registImage", transversalState)
           val registContentResult:RegistContentResult = Json.parse(knowledgeForImageJson).as[RegistContentResult]
           if(registContentResult.statusInfo.status.equals("ERROR")) throw new Exception(registContentResult.statusInfo.message)
           registContentResult.knowledgeForImage
