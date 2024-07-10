@@ -21,6 +21,7 @@ import actors.RegistKnowledgeActor.{RegistKnowledgeUsingSentenceActor, RegistKno
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
+import com.ideal.linked.toposoid.common.{TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.typesafe.scalalogging.LazyLogging
 
@@ -72,15 +73,17 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
   }
 */
   def regist()  = Action(parse.json) { request =>
+    val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
     try{
       val json = request.body
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
 
-      (knowledgeRegistActor ? RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet))
+      (knowledgeRegistActor ? RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet, transversalState))
+      logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.username))
       Ok(Json.obj("status" ->"Ok", "message" -> ""))
     }catch{
       case e: Exception => {
-        logger.error(e.toString(), e)
+        logger.error(ToposoidUtils.formatMessageForLogger(e.toString(),transversalState.username), e)
         BadRequest(Json.obj("status" ->"Error", "message" -> e.toString()))
       }
     }
