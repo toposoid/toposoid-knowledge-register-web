@@ -79,11 +79,11 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
 
       (knowledgeRegistActor ? RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet, transversalState))
-      logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.username))
+      logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
       Ok(Json.obj("status" ->"Ok", "message" -> ""))
     }catch{
       case e: Exception => {
-        logger.error(ToposoidUtils.formatMessageForLogger(e.toString(),transversalState.username), e)
+        logger.error(ToposoidUtils.formatMessageForLogger(e.toString(),transversalState.userId), e)
         BadRequest(Json.obj("status" ->"Error", "message" -> e.toString()))
       }
     }
