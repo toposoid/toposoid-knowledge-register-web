@@ -17,14 +17,13 @@
 package controllers
 
 import com.ideal.linked.common.DeploymentConverter.conf
-import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
 import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
 import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
 import com.ideal.linked.toposoid.knowledgebase.nlp.model.{FeatureVector, SingleSentence}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
+import com.ideal.linked.toposoid.protocol.model.neo4j.Neo4jRecords
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
-import org.neo4j.driver.{Record, Result}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
@@ -48,7 +47,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
   override def beforeAll(): Unit = {
     ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
     ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
-    Neo4JAccessor.delete()
+    TestUtils.deleteNeo4JAllData(transversalState)
   }
 
   private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier, featureType: FeatureType):Unit = {
@@ -166,16 +165,16 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
         .withJsonBody(Json.parse(jsonStr))
       val result= call(controller.regist(), fr)
       status(result) mustBe OK
-      Thread.sleep(30000)
+      Thread.sleep(50000)
       val query = "MATCH x=(:ClaimNode{surface:'主張２です。'})<-[:LocalEdge{logicType:'OR'}]-(:ClaimNode{surface:'主張１です。'})<-[:LocalEdge{logicType:'IMP'}]-(:PremiseNode{surface:'前提１です。'})-[:LocalEdge{logicType:'AND'}]->(:PremiseNode{surface:'前提２です。'}) return x"
-      val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
-      assert(queryResult.hasNext())
-      val result2: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t")
-      assert(result2.hasNext)
-      val urlCat = result2.next().get("s").get("url").asString()
-      val result3: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t")
-      assert(result3.hasNext)
-      val urlDog = result3.next().get("s").get("url").asString()
+      val queryResult:Neo4jRecords = TestUtils.executeQueryAndReturn(query, transversalState)
+      assert(queryResult.records.size == 1)
+      val result2: Neo4jRecords = TestUtils.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t", transversalState)
+      assert(result2.records.size == 1)
+      val urlCat = result2.records.head.head.value.featureNode.get.url
+      val result3: Neo4jRecords = TestUtils.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t", transversalState)
+      assert(result3.records.size == 1)
+      val urlDog = result3.records.head.head.value.featureNode.get.url
 
       val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
 
@@ -201,6 +200,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
           result.ids.map(x => deleteFeatureVector(x, IMAGE))
         })
       }
+
     }
   }
 
