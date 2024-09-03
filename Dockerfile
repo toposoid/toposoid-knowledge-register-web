@@ -4,7 +4,7 @@ WORKDIR /app
 ARG TARGET_BRANCH
 ARG JAVA_OPT_XMX
 ENV DEPLOYMENT=local
-ENV _JAVA_OPTIONS="-Xms512m -Xmx"${JAVA_OPT_XMX}
+ENV _JAVA_OPTIONS="-Xss512k -Xms512m -Xmx8G"
 
 RUN git clone https://github.com/toposoid/toposoid-knowledge-register-web.git \
 && cd toposoid-knowledge-register-web \
