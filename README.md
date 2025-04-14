@@ -185,18 +185,18 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:9002/regist
 ```
 * Images are registered when KnowledgeForImages is set.
-can.
 
-* KnowledgeSentenceSet
+## Details Of the DataFormats  
+### KnowledgeSentenceSet
 
-| name | type                     | explanation   |
-| ------------- |--------------------------|---------------|
-| premiseList | List[Knowledge]          | see Knowledge |
-| premiseLogicRelation | List[PropositionRelation] | see PropositionRelation   |
-| claimList | List[Knowledge] | see Knowledge |
-| claimLogicRelation | List[PropositionRelation]                   | see PropositionRelation |
+| name | type                     | explanation                 |
+| ------------- |--------------------------|-----------------------------|
+| premiseList | List[Knowledge]          | see [Knowledge](#Knowledge) |
+| premiseLogicRelation | List[PropositionRelation] | see PropositionRelation     |
+| claimList | List[Knowledge] | see Knowledge               |
+| claimLogicRelation | List[PropositionRelation]                   | see PropositionRelation     |
 
-* Knowledge
+### Knowledge
 
 | name               | type                    | explanation                                              |
 |--------------------|-------------------------|----------------------------------------------------------|
@@ -206,23 +206,25 @@ can.
 | isNegativeSentence | Boolean                 | Currently fixed to False                                 |
 | knowledgeForImages | List[KnowledgeForImage] | see KnowledgeForImage                                    |
 | knowledgeForTables | List[KnowledgeForTable] | see KnowledgeForTable                                    |
+| knowledgeForDocument | KnowledgeForDocument    | see KnowledgeForDocument                                    |
+| documentPageReference | DocumentPageReference   | see DocumentPageReference                                    |
 
-* PropositionRelation
+### PropositionRelation
 
-| name | type   | explanation                                                                       |
+| name | type   | explanation             　                                                         |
 | ------------- |--------|-----------------------------------------------------------------------------------|
 | operator | String | 'AND' 'OR'                                                                        |
 | sourceIndex | Int    | Source for binary operation. Specified by index of premiseList or claimList.      |
 | destinationIndex | Int    | Destination for binary operation. Specified by index of premiseList or claimList. |
 
-* KnowledgeForImage
+### KnowledgeForImage
 
 | name           | type    | explanation                       |
 |----------------|---------|-----------------------------------|
 | id             | String  | Unique id that identifies the image |
 | imageReference | ImageReference  | see ImageReference  |
 
-* ImageReference
+### ImageReference
 
 | name      | type      | explanation               |
 |-----------|-----------|---------------------------|
@@ -232,7 +234,7 @@ can.
 | width     | Int       | Image width               |
 | height    | Int       | Image height              |
 
-* Reference
+### Reference
 
 | name    | type      | explanation                                                               |
 |---------|-----------|---------------------------------------------------------------------------|
@@ -242,19 +244,36 @@ can.
 | isWholeSentence   | Boolean   | True if the image is associated with the entire sentence, otherwise False |
 | originalUrlOrReference  | String       | original url                                                              |
 
-* KnowledgeForTable
+### KnowledgeForTable
 
 | name           | type           | explanation                         |
 |----------------|----------------|-------------------------------------|
 | id             | String         | Unique id that identifies the image |
 | TableReference | TableReference | see TableReference                  |
 
-* TableReference
+### TableReference
 
 | name      | type      | explanation               |
 |-----------|-----------|---------------------------|
 | reference | Reference | see Reference             |
 
+### KnowledgeForDocument
+
+| name | type   | explanation                           |
+|------|--------|---------------------------------------|
+| id   | String | Unique id that identifies the Document |
+| filename   | String | The document's original filename      |
+| url   | String | The URL of the saved document      |
+| titleOfTopPage   | String | Title of the top page of the document  |
+
+### DocumentPageReference
+
+| name | type         | explanation                     |
+|------|--------------|---------------------------------|
+| pageNo   | Int          | The page number in the document |
+| references   | List[String] | List of references              |
+| tableOfContents   | List[String] | List of contents                |
+| headlines   | List[String] | List of headings                |
 
 
 Try accessing http://localhost:7474 in your browser.
