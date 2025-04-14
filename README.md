@@ -189,25 +189,25 @@ curl -X POST -H "Content-Type: application/json" -d '{
 ## Details Of the DataFormats  
 ### KnowledgeSentenceSet
 
-| name | type                     | explanation                 |
-| ------------- |--------------------------|-----------------------------|
-| premiseList | List[Knowledge]          | see [Knowledge](#Knowledge) |
-| premiseLogicRelation | List[PropositionRelation] | see PropositionRelation     |
-| claimList | List[Knowledge] | see Knowledge               |
-| claimLogicRelation | List[PropositionRelation]                   | see PropositionRelation     |
+| name | type                     | explanation                                     |
+| ------------- |--------------------------|-------------------------------------------------|
+| premiseList | List[Knowledge]          | see [Knowledge](#Knowledge)                     |
+| premiseLogicRelation | List[PropositionRelation] | see [PropositionRelation](#PropositionRelation) |
+| claimList | List[Knowledge] | see [Knowledge](#Knowledge)                     |
+| claimLogicRelation | List[PropositionRelation]  | see [PropositionRelation](#PropositionRelation) |
 
 ### Knowledge
 
-| name               | type                    | explanation                                              |
-|--------------------|-------------------------|----------------------------------------------------------|
-| sentence           | String                  | sentence                                                 |
-| lang               | String                  | ja_JP or en_US                                           |
+| name               | type                    | explanation                                             |
+|--------------------|-------------------------|---------------------------------------------------------|
+| sentence           | String                  | sentence                                                |
+| lang               | String                  | ja_JP or en_US                                          |
 | extentInfoJson     | String                  | Additional information can be registered in Json format. |
-| isNegativeSentence | Boolean                 | Currently fixed to False                                 |
-| knowledgeForImages | List[KnowledgeForImage] | see KnowledgeForImage                                    |
-| knowledgeForTables | List[KnowledgeForTable] | see KnowledgeForTable                                    |
-| knowledgeForDocument | KnowledgeForDocument    | see KnowledgeForDocument                                    |
-| documentPageReference | DocumentPageReference   | see DocumentPageReference                                    |
+| isNegativeSentence | Boolean                 | Currently fixed to False                                |
+| knowledgeForImages | List[KnowledgeForImage] | see [KnowledgeForImage](#KnowledgeForImage)             |
+| knowledgeForTables | List[KnowledgeForTable] | see [KnowledgeForTable](#KnowledgeForTable)             |
+| knowledgeForDocument | KnowledgeForDocument    | see [KnowledgeForDocument](#KnowledgeForDocument)       |
+| documentPageReference | DocumentPageReference   | see [DocumentPageReference](#DocumentPageReference)  |
 
 ### PropositionRelation
 
@@ -219,10 +219,10 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
 ### KnowledgeForImage
 
-| name           | type    | explanation                       |
-|----------------|---------|-----------------------------------|
+| name           | type    | explanation                         |
+|----------------|---------|-------------------------------------|
 | id             | String  | Unique id that identifies the image |
-| imageReference | ImageReference  | see ImageReference  |
+| imageReference | ImageReference  | see [ImageReference](#ImageReference) |
 
 ### ImageReference
 
@@ -246,16 +246,16 @@ curl -X POST -H "Content-Type: application/json" -d '{
 
 ### KnowledgeForTable
 
-| name           | type           | explanation                         |
-|----------------|----------------|-------------------------------------|
-| id             | String         | Unique id that identifies the image |
-| TableReference | TableReference | see TableReference                  |
+| name           | type           | explanation                           |
+|----------------|----------------|---------------------------------------|
+| id             | String         | Unique id that identifies the image   |
+| TableReference | TableReference | see [TableReference](#TableReference) |
 
 ### TableReference
 
-| name      | type      | explanation               |
-|-----------|-----------|---------------------------|
-| reference | Reference | see Reference             |
+| name      | type      | explanation                   |
+|-----------|-----------|-------------------------------|
+| reference | Reference | see [Reference](#Reference)   |
 
 ### KnowledgeForDocument
 
