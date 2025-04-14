@@ -198,13 +198,14 @@ can.
 
 * Knowledge
 
-| name | type    | explanation                                              |
-| ------------- |---------|----------------------------------------------------------|
-| sentence | String  | sentence                                                 |
-| lang | String  | ja_JP or en_US                                           |
-| extentInfoJson | String  | Additional information can be registered in Json format. |
-| isNegativeSentence | Boolean | Currently fixed to False                                 |
-| knowledgeForImages | List[KnowledgeForImage]  | see KnowledgeForImage                                    |
+| name               | type                    | explanation                                              |
+|--------------------|-------------------------|----------------------------------------------------------|
+| sentence           | String                  | sentence                                                 |
+| lang               | String                  | ja_JP or en_US                                           |
+| extentInfoJson     | String                  | Additional information can be registered in Json format. |
+| isNegativeSentence | Boolean                 | Currently fixed to False                                 |
+| knowledgeForImages | List[KnowledgeForImage] | see KnowledgeForImage                                    |
+| knowledgeForTables | List[KnowledgeForTable] | see KnowledgeForTable                                    |
 
 * PropositionRelation
 
@@ -223,13 +224,13 @@ can.
 
 * ImageReference
 
-| name      | type      | explanation        |
-|-----------|-----------|--------------------|
-| reference | Reference | see Reference     |
+| name      | type      | explanation               |
+|-----------|-----------|---------------------------|
+| reference | Reference | see Reference             |
 | x         | Int       | x coordinate of image TOP |
-| y         | Int       |  coordinate of image TOP |
-| width     | Int       | Image width |
-| height    | Int       | Image height |
+| y         | Int       | y coordinate of image TOP |
+| width     | Int       | Image width               |
+| height    | Int       | Image height              |
 
 * Reference
 
@@ -240,6 +241,20 @@ can.
 | surfaceIndex        | Int       | Index in the sentence                                                     |
 | isWholeSentence   | Boolean   | True if the image is associated with the entire sentence, otherwise False |
 | originalUrlOrReference  | String       | original url                                                              |
+
+* KnowledgeForTable
+
+| name           | type           | explanation                         |
+|----------------|----------------|-------------------------------------|
+| id             | String         | Unique id that identifies the image |
+| TableReference | TableReference | see TableReference                  |
+
+* TableReference
+
+| name      | type      | explanation               |
+|-----------|-----------|---------------------------|
+| reference | Reference | see Reference             |
+
 
 
 Try accessing http://localhost:7474 in your browser.
