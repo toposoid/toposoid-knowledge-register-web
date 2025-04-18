@@ -6,4 +6,3 @@
 # An example controller showing a sample home page
 + nocsrf
 POST    /registerForManual                     controllers.HomeController.registerForManual()
-POST    /registerForDocument                   controllers.HomeController.registerForDocument()
