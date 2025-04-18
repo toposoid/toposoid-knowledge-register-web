@@ -16,11 +16,13 @@
 
 package controllers
 
-import actors.RegistKnowledgeActor
-import actors.RegistKnowledgeActor.{RegistKnowledgeUsingSentenceActor, RegistKnowledgeUsingSentenceSetActor}
+import actors.KnowledgeRegistrationActor
+import actors.KnowledgeRegistrationActor.{RegisterKnowledgeForDocumentActor, RegisterKnowledgeForManualActor}
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
+import com.ideal.linked.common.DeploymentConverter.conf
+import com.ideal.linked.toposoid.common.mq.KnowledgeRegistrationForManual
 import com.ideal.linked.toposoid.common.{TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.typesafe.scalalogging.LazyLogging
@@ -47,38 +49,19 @@ object KnowledgeSentences {
 @Singleton
 class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) with LazyLogging{
 
-  val knowledgeRegistActor = system.actorOf(RegistKnowledgeActor.props, "knowledge-regist-actor")
+  val knowledgeRegistrationActor = system.actorOf(KnowledgeRegistrationActor.props, "knowledge-regist-actor")
   implicit val timeout: Timeout = 60.seconds
 
-  /**
-   * With json as input, the process of registering to the graph database is executed asynchronously.
-   * If the execution is successful, it returns a response at that point.
-   * @return
-   */
-/*
-  @deprecated
-  def regist()  = Action(parse.json) { request =>
-
-    try{
-      val json = request.body
-      val knowledgeSentences: KnowledgeSentences = Json.parse(json.toString).as[KnowledgeSentences]
-      (knowledgeRegistActor ? RegistKnowledgeUsingSentenceActor(knowledgeSentences.knowledgeList))
-      Ok({"\"result\":\"OK\""}).as(JSON)
-    }catch{
-      case e: Exception => {
-        logger.error(e.toString(), e)
-        BadRequest(Json.obj("status" ->"Error", "message" -> e.toString()))
-      }
-    }
-  }
-*/
-  def regist()  = Action(parse.json) { request =>
+  def registerForManual()  = Action(parse.json) { request =>
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
     try{
       val json = request.body
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
+      val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = knowledgeSentenceSet, transversalState = transversalState)
+      val jsonStr = Json.toJson(knowledgeRegistrationForManual).toString()
+      ToposoidUtils.publishMessage(jsonStr, conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
 
-      (knowledgeRegistActor ? RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet, transversalState))
+      //(knowledgeRegistrationActor ? RegisterKnowledgeForManualActor(knowledgeSentenceSet, transversalState))
       logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
       Ok(Json.obj("status" ->"Ok", "message" -> ""))
     }catch{
@@ -87,6 +70,24 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
         BadRequest(Json.obj("status" ->"Error", "message" -> e.toString()))
       }
     }
+  }
+
+
+  def registerForDocument() = Action(parse.json) { request =>
+      val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE.str).get).as[TransversalState]
+      try {
+        val json = request.body
+        val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
+
+        (knowledgeRegistrationActor ? RegisterKnowledgeForDocumentActor(knowledgeSentenceSet, transversalState))
+        logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
+        Ok(Json.obj("status" -> "Ok", "message" -> ""))
+      } catch {
+        case e: Exception => {
+          logger.error(ToposoidUtils.formatMessageForLogger(e.toString(), transversalState.userId), e)
+          BadRequest(Json.obj("status" -> "Error", "message" -> e.toString()))
+        }
+      }
   }
 
 }
