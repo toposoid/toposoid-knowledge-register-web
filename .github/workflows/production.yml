@@ -35,7 +35,9 @@ jobs:
             docker compose -f docker-compose-workflow-full.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt headerCheck"
             docker compose -f docker-compose-workflow-full.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt test:headerCheck"
             docker compose -f docker-compose-workflow-full.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt compile"
+            docker compose -f docker-compose-workflow.yml up -d mysql
             docker compose -f docker-compose-workflow-full.yml up -d neo4j
+            docker compose -f docker-compose-workflow.yml up -d elasticmq
             docker compose -f docker-compose-workflow-full.yml up -d sentence-weaviate
             docker compose -f docker-compose-workflow-full.yml up -d data-accessor-sentence-weaviate-web
             docker compose -f docker-compose-workflow-full.yml up -d image-weaviate
@@ -48,6 +50,8 @@ jobs:
             curl --retry 10 --retry-delay 5 --retry-all-errors -X POST http://localhost:7474
             curl --retry 10 --retry-delay 5 --retry-all-errors -X POST -H "Content-Type: application/json" -d '{"sentence": "これはテストです。"}' http://localhost:9006/getFeatureVector
             docker compose -f docker-compose-workflow-full.yml exec -T ${{ env.PJ_REPO }} bash -c "cd ${{ env.PJ_REPO }} && sbt 'testOnly **.*Japanese'"
+            echo 'quit' | curl -s -o /dev/null telnet://localhost:3306            
+            sleep 60      
             docker compose -f docker-compose-workflow-full.yml rm -fsv toposoid-common-nlp-japanese-web
             docker compose -f docker-compose-workflow-full.yml rm -fsv toposoid-sentence-parser-japanese-web
             docker compose -f docker-compose-workflow-full.yml up -d corenlp

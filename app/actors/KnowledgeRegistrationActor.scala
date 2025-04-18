@@ -18,6 +18,7 @@ package actors
 
 import akka.actor.{Actor, Props}
 import com.ideal.linked.common.DeploymentConverter.conf
+import com.ideal.linked.toposoid.common.mq.KnowledgeRegistrationForManual
 import com.ideal.linked.toposoid.common.{ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.RegistContentResult
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{ImageReference, Knowledge, KnowledgeForImage, KnowledgeSentenceSet, PropositionRelation, Reference}
@@ -30,10 +31,11 @@ import com.typesafe.scalalogging.LazyLogging
 import io.jvm.uuid.UUID
 import play.api.libs.json.Json
 
-object RegistKnowledgeActor {
-  def props = Props[RegistKnowledgeActor]
-  case class RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge])
-  case class RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState)
+object KnowledgeRegistrationActor {
+  def props = Props[KnowledgeRegistrationActor]
+  //case class RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge])
+  case class RegisterKnowledgeForManualActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState)
+  case class RegisterKnowledgeForDocumentActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState)
 }
 
 /**
@@ -41,42 +43,20 @@ object RegistKnowledgeActor {
  * The main implementation of this module is the execution process that
  * converts the result of predicate argument structure analysis of sentences into a graph database.
  */
-class RegistKnowledgeActor extends Actor with LazyLogging {
+class KnowledgeRegistrationActor extends Actor with LazyLogging {
 
-  import RegistKnowledgeActor._
+  import KnowledgeRegistrationActor._
 
   /**
    *　This function analyzes the requested json with a predicate argument structure and then registers it in the graph database.
    * @return
    */
   def receive = {
-    /*
-    case RegistKnowledgeUsingSentenceActor(knowledgeList:List[Knowledge]) => {
+    case RegisterKnowledgeForManualActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState) => {
       try {
-        val propositionIds = (1 to knowledgeList.size).map(x => UUID.random.toString).toList
-        Sentence2Neo4jTransformer.createGraphAuto(propositionIds, knowledgeList)
-        FeatureVectorizer.createVector(propositionIds, knowledgeList)
-      } catch {
-        case e: Exception => {
-          logger.error(e.toString, e)
-        }
-      }
-      sender() ! "OK "
-    }
-    */
-    case RegistKnowledgeUsingSentenceSetActor(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState) => {
-      try {
-        val propositionId =UUID.random.toString
-        val knowledgeForParserPremise:List[KnowledgeForParser] = knowledgeSentenceSet.premiseList.map(KnowledgeForParser(propositionId, UUID.random.toString, _))
-        val knowledgeForParserClaim:List[KnowledgeForParser] = knowledgeSentenceSet.claimList.map(KnowledgeForParser(propositionId, UUID.random.toString, _))
-        val knowledgeSentenceSetForParser = KnowledgeSentenceSetForParser(
-          registKnowledgeImages(knowledgeForParserPremise, transversalState),
-          knowledgeSentenceSet.premiseLogicRelation,
-          registKnowledgeImages(knowledgeForParserClaim, transversalState),
-          knowledgeSentenceSet.claimLogicRelation)
-
-        Sentence2Neo4jTransformer.createGraph(knowledgeSentenceSetForParser, transversalState)
-        FeatureVectorizer.createVector(knowledgeSentenceSetForParser, transversalState)
+        val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = knowledgeSentenceSet, transversalState = transversalState)
+        val jsonStr = Json.toJson(knowledgeRegistrationForManual).toString()
+        ToposoidUtils.publishMessage(jsonStr,conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
       } catch {
         case e: Exception => {
           logger.error(e.toString, e)
@@ -86,6 +66,7 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
     }
   }
 
+  /*
   private def registKnowledgeImages(knowledgeForParsers:List[KnowledgeForParser], transversalState:TransversalState):List[KnowledgeForParser] = Try {
 
     knowledgeForParsers.foldLeft(List.empty[KnowledgeForParser]){
@@ -111,5 +92,5 @@ class RegistKnowledgeActor extends Actor with LazyLogging {
     case Success(s) => s
     case Failure(e) => throw e
   }
-
+  */
 }

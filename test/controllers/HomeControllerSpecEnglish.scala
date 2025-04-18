@@ -21,9 +21,10 @@ import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, TRANSVERS
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
 import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
 import com.ideal.linked.toposoid.knowledgebase.nlp.model.FeatureVector
-import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
+import com.ideal.linked.toposoid.knowledgebase.regist.model.{ImageReference, Knowledge, KnowledgeForImage, KnowledgeSentenceSet, PropositionRelation, Reference}
 import com.ideal.linked.toposoid.protocol.model.neo4j.Neo4jRecords
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
+import com.typesafe.sslconfig.ssl.AlgorithmConstraintsParser.operator
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
@@ -68,104 +69,37 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
   "HomeController POST(english KnowledgeSentenceSet)" should {
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr: String =
-        """{
-          |	"premiseList": [
-          |		{
-          |			"sentence": "This is premise-1.",
-          |			"lang": "en_US",
-          |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false,
-          |     "knowledgeForImages": []
-          |		},
-          |		{
-          |			"sentence": "This is premise-2.",
-          |			"lang": "en_US",
-          |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false,
-          |     "knowledgeForImages": []
-          |		},
-          |		{
-          |			"sentence": "There are two cats.",
-          |			"lang": "en_US",
-          |			"extentInfoJson": "{}",
-          |      "isNegativeSentence": false,
-          |      "knowledgeForImages":[{
-          |                             "id": "",
-          |                             "imageReference": {
-          |                               "reference": {
-          |                                      "url": "",
-          |                                      "surface": "cats",
-          |                                      "surfaceIndex": 3,
-          |                                      "isWholeSentence": false,
-          |                                      "originalUrlOrReference": "http://images.cocodataset.org/val2017/000000039769.jpg"},
-          |                               "x": 27,
-          |                               "y": 41,
-          |                               "width": 287,
-          |                               "height": 435
-          |                               }
-          |                            }]
-          |		}
-          |	],
-          |	"premiseLogicRelation": [
-          |		{
-          |			"operator": "AND",
-          |			"sourceIndex": 0,
-          |			"destinationIndex": 1
-          |		}
-          |	],
-          |	"claimList": [
-          |		{
-          |			"sentence": "This is claim-1.",
-          |			"lang": "en_US",
-          |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false,
-          |     "knowledgeForImages": []
-          |		},
-          |		{
-          |			"sentence": "This is claim-2.",
-          |			"lang": "en_US",
-          |			"extentInfoJson": "{}",
-          |     "isNegativeSentence":false,
-          |     "knowledgeForImages": []
-          |		},
-          |		{
-          |			"sentence": "There is a dog",
-          |			"lang": "en_US",
-          |			"extentInfoJson": "{}",
-          |      "isNegativeSentence": false,
-          |      "knowledgeForImages":[{
-          |                             "id": "",
-          |                             "imageReference": {
-          |                               "reference": {
-          |                                      "url": "",
-          |                                      "surface": "dog",
-          |                                      "surfaceIndex": 3,
-          |                                      "isWholeSentence": false,
-          |                                      "originalUrlOrReference": "http://images.cocodataset.org/train2017/000000428746.jpg"},
-          |                               "x": 435,
-          |                               "y": 227,
-          |                               "width": 91,
-          |                               "height": 69
-          |                               }
-          |                            }]
-          |		}
-          |	],
-          |	"claimLogicRelation": [
-          |		{
-          |			"operator": "OR",
-          |			"sourceIndex": 0,
-          |			"destinationIndex": 1
-          |		}
-          |	]
-          |}""".stripMargin
-      val fr = FakeRequest(POST, "/regist")
+
+      val knowledge1 = Knowledge(sentence = "This is premise-1.", lang = "en_US", extentInfoJson = "{}")
+      val knowledge2 = Knowledge(sentence = "This is premise-2.", lang = "en_US", extentInfoJson = "{}")
+      val reference3 = Reference(url = "", surface = "cats", surfaceIndex = 3, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg", metaInformations = List.empty[String])
+      val imageReference3 = ImageReference(reference = reference3, x = 27, y = 41, width = 287, height = 435)
+      val knowledgeForImages3 = KnowledgeForImage(id = "", imageReference = imageReference3)
+      val knowledge3 = Knowledge(sentence = "There are two cats.", lang = "en_US", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages3))
+
+      val knowledge4 = Knowledge(sentence = "This is claim-1.", lang = "en_US", extentInfoJson = "{}")
+      val knowledge5 = Knowledge(sentence = "This is claim-2.", lang = "en_US", extentInfoJson = "{}")
+      val reference6 = Reference(url = "", surface = "dog", surfaceIndex = 3, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg", metaInformations = List.empty[String])
+      val imageReference6 = ImageReference(reference = reference6, x = 435, y = 227, width = 91, height = 69)
+      val knowledgeForImages6 = KnowledgeForImage(id = "", imageReference = imageReference6)
+      val knowledge6 = Knowledge(sentence = "There is a dog", lang = "en_US", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages6))
+
+      val knowledgeSentenceSet = KnowledgeSentenceSet(
+        premiseList = List(knowledge1, knowledge2, knowledge3),
+        premiseLogicRelation = List(PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2)),
+        claimList = List(knowledge4, knowledge5, knowledge6),
+        claimLogicRelation = List(PropositionRelation(operator = "OR", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2))
+      )
+      val jsonStr = Json.toJson(knowledgeSentenceSet).toString()
+
+
+      val fr = FakeRequest(POST, "/registerForManual")
         .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> Json.toJson(transversalState).toString())
         .withJsonBody(Json.parse(jsonStr))
-      val result = call(controller.regist(), fr)
+      val result = call(controller.registerForManual(), fr)
       status(result) mustBe OK
 
-      Thread.sleep(50000)
+      //Thread.sleep(60000)
       val query = "MATCH x=(:ClaimNode{surface:'claim-1'})-[:LocalEdge]-(:ClaimNode)-[:LocalEdge{logicType:'OR'}]-(:ClaimNode)-[:LocalEdge]-(:ClaimNode{surface:'claim-2'}) return x"
       val queryResult:Neo4jRecords = TestUtils.executeQueryAndReturn(query, transversalState)
       assert(queryResult.records.size == 1)
@@ -185,8 +119,8 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       assert(queryResult5.records.size == 1)
       val urlDog = queryResult5.records.head.head.value.featureNode.get.url
 
-      val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
-      for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
+      val knowledgeSentenceSet2:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
+      for(knowledge <- knowledgeSentenceSet2.premiseList:::knowledgeSentenceSet2.claimList){
         val vector = FeatureVectorizer.getSentenceVector(Knowledge(knowledge.sentence, "en_US", "{}"), transversalState)
         val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1)).toString()
         val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
@@ -213,3 +147,98 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
     }
   }
 }
+
+
+/*
+val jsonStr: String =
+  """{
+    |	"premiseList": [
+    |		{
+    |			"sentence": "This is premise-1.",
+    |			"lang": "en_US",
+    |			"extentInfoJson": "{}",
+    |     "isNegativeSentence":false,
+    |     "knowledgeForImages": []
+    |		},
+    |		{
+    |			"sentence": "This is premise-2.",
+    |			"lang": "en_US",
+    |			"extentInfoJson": "{}",
+    |     "isNegativeSentence":false,
+    |     "knowledgeForImages": []
+    |		},
+    |		{
+    |			"sentence": "There are two cats.",
+    |			"lang": "en_US",
+    |			"extentInfoJson": "{}",
+    |      "isNegativeSentence": false,
+    |      "knowledgeForImages":[{
+    |                             "id": "",
+    |                             "imageReference": {
+    |                               "reference": {
+    |                                      "url": "",
+    |                                      "surface": "cats",
+    |                                      "surfaceIndex": 3,
+    |                                      "isWholeSentence": false,
+    |                                      "originalUrlOrReference": "http://images.cocodataset.org/val2017/000000039769.jpg"},
+    |                               "x": 27,
+    |                               "y": 41,
+    |                               "width": 287,
+    |                               "height": 435
+    |                               }
+    |                            }]
+    |		}
+    |	],
+    |	"premiseLogicRelation": [
+    |		{
+    |			"operator": "AND",
+    |			"sourceIndex": 0,
+    |			"destinationIndex": 1
+    |		}
+    |	],
+    |	"claimList": [
+    |		{
+    |			"sentence": "This is claim-1.",
+    |			"lang": "en_US",
+    |			"extentInfoJson": "{}",
+    |     "isNegativeSentence":false,
+    |     "knowledgeForImages": []
+    |		},
+    |		{
+    |			"sentence": "This is claim-2.",
+    |			"lang": "en_US",
+    |			"extentInfoJson": "{}",
+    |     "isNegativeSentence":false,
+    |     "knowledgeForImages": []
+    |		},
+    |		{
+    |			"sentence": "There is a dog",
+    |			"lang": "en_US",
+    |			"extentInfoJson": "{}",
+    |      "isNegativeSentence": false,
+    |      "knowledgeForImages":[{
+    |                             "id": "",
+    |                             "imageReference": {
+    |                               "reference": {
+    |                                      "url": "",
+    |                                      "surface": "dog",
+    |                                      "surfaceIndex": 3,
+    |                                      "isWholeSentence": false,
+    |                                      "originalUrlOrReference": "http://images.cocodataset.org/train2017/000000428746.jpg"},
+    |                               "x": 435,
+    |                               "y": 227,
+    |                               "width": 91,
+    |                               "height": 69
+    |                               }
+    |                            }]
+    |		}
+    |	],
+    |	"claimLogicRelation": [
+    |		{
+    |			"operator": "OR",
+    |			"sourceIndex": 0,
+    |			"destinationIndex": 1
+    |		}
+    |	]
+    |}""".stripMargin
+ */

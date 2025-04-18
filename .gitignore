@@ -9,3 +9,5 @@ target
 /RUNNING_PID
 .DS_Store
 docker-compose-local.yml
+.DS_Store
+/test*.json
