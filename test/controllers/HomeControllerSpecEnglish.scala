@@ -99,7 +99,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       val result = call(controller.registerForManual(), fr)
       status(result) mustBe OK
 
-      //Thread.sleep(60000)
+      Thread.sleep(60000)
       val query = "MATCH x=(:ClaimNode{surface:'claim-1'})-[:LocalEdge]-(:ClaimNode)-[:LocalEdge{logicType:'OR'}]-(:ClaimNode)-[:LocalEdge]-(:ClaimNode{surface:'claim-2'}) return x"
       val queryResult:Neo4jRecords = TestUtils.executeQueryAndReturn(query, transversalState)
       assert(queryResult.records.size == 1)
