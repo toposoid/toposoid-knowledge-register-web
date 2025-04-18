@@ -9,6 +9,7 @@ services:
       - TOPOSOID_MQ_PORT=9324
       - TOPOSOID_MQ_ACCESS_KEY=__##YOUR_AWS_ACCESS_KEY##__
       - TOPOSOID_MQ_SECRET_KEY=__##YOUR_AWS_SECRET_KEY##__
+      - TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE=toposoid-knowledge-register-queue.fifo
       #- TOPOSOID_GRAPHDB_HOST=neo4j
       - TOPOSOID_GRAPHDB_WEB_HOST=scala-data-accessor-neo4j-web
       - TOPOSOID_GRAPHDB_WEB_PORT=9005
