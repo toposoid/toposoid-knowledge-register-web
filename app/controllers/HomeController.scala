@@ -16,11 +16,7 @@
 
 package controllers
 
-import actors.KnowledgeRegistrationActor
-import actors.KnowledgeRegistrationActor.{RegisterKnowledgeForDocumentActor, RegisterKnowledgeForManualActor}
 import akka.actor.ActorSystem
-import akka.pattern.ask
-import akka.util.Timeout
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.toposoid.common.mq.KnowledgeRegistrationForManual
 import com.ideal.linked.toposoid.common.{TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
@@ -34,12 +30,6 @@ import play.api.mvc._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
 
-case class KnowledgeSentences(knowledgeList:List[Knowledge])
-object KnowledgeSentences {
-  implicit val jsonWrites = Json.writes[KnowledgeSentences]
-  implicit val jsonReads = Json.reads[KnowledgeSentences]
-}
-
 /**
  * This module is a WEB API for converting sentences into a knowledge graph and registering them in a graph database.
  * @param system
@@ -49,8 +39,6 @@ object KnowledgeSentences {
 @Singleton
 class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) with LazyLogging{
 
-  val knowledgeRegistrationActor = system.actorOf(KnowledgeRegistrationActor.props, "knowledge-regist-actor")
-  implicit val timeout: Timeout = 60.seconds
 
   def registerForManual()  = Action(parse.json) { request =>
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
@@ -60,8 +48,6 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
       val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = knowledgeSentenceSet, transversalState = transversalState)
       val jsonStr = Json.toJson(knowledgeRegistrationForManual).toString()
       ToposoidUtils.publishMessage(jsonStr, conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
-
-      //(knowledgeRegistrationActor ? RegisterKnowledgeForManualActor(knowledgeSentenceSet, transversalState))
       logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
       Ok(Json.obj("status" ->"Ok", "message" -> ""))
     }catch{
@@ -72,22 +58,5 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
     }
   }
 
-
-  def registerForDocument() = Action(parse.json) { request =>
-      val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE.str).get).as[TransversalState]
-      try {
-        val json = request.body
-        val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
-
-        (knowledgeRegistrationActor ? RegisterKnowledgeForDocumentActor(knowledgeSentenceSet, transversalState))
-        logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
-        Ok(Json.obj("status" -> "Ok", "message" -> ""))
-      } catch {
-        case e: Exception => {
-          logger.error(ToposoidUtils.formatMessageForLogger(e.toString(), transversalState.userId), e)
-          BadRequest(Json.obj("status" -> "Error", "message" -> e.toString()))
-        }
-      }
-  }
 
 }
