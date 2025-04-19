@@ -40,7 +40,7 @@ import scala.concurrent.duration.Duration
  *
  * For more information, see https://www.playframework.com/documentation/latest/ScalaTestingWithScalaTest
  */
-class HomeControllerSpecJapaneseTest extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerTest with Injecting {
+class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerTest with Injecting {
 
   val transversalState = TransversalState(userId="test-user", username="guest", roleId=0, csrfToken = "")
 
