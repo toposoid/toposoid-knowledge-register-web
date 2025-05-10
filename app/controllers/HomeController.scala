@@ -18,7 +18,7 @@ package controllers
 
 import akka.actor.ActorSystem
 import com.ideal.linked.common.DeploymentConverter.conf
-import com.ideal.linked.toposoid.common.mq.KnowledgeRegistrationForManual
+import com.ideal.linked.toposoid.common.mq.{KnowledgeRegistrationForManual, MqUtils}
 import com.ideal.linked.toposoid.common.{TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
 import com.typesafe.scalalogging.LazyLogging
@@ -47,7 +47,7 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
       val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = knowledgeSentenceSet, transversalState = transversalState)
       val jsonStr = Json.toJson(knowledgeRegistrationForManual).toString()
-      ToposoidUtils.publishMessage(jsonStr, conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
+      MqUtils.publishMessage(jsonStr, conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
       logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
       Ok(Json.obj("status" ->"Ok", "message" -> ""))
     }catch{
