@@ -47,7 +47,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
   override def beforeAll(): Unit = {
     ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
     ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
-    TestUtils.deleteNeo4JAllData(transversalState)
+    TestUtilsEx.deleteNeo4JAllData(transversalState)
   }
 
   private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier, featureType: FeatureType):Unit = {
@@ -99,12 +99,12 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       status(result) mustBe OK
       Thread.sleep(60000)
       val query = "MATCH x=(:ClaimNode{surface:'主張２です。'})<-[:LocalEdge{logicType:'OR'}]-(:ClaimNode{surface:'主張１です。'})<-[:LocalEdge{logicType:'IMP'}]-(:PremiseNode{surface:'前提１です。'})-[:LocalEdge{logicType:'AND'}]->(:PremiseNode{surface:'前提２です。'}) return x"
-      val queryResult:Neo4jRecords = TestUtils.executeQueryAndReturn(query, transversalState)
+      val queryResult:Neo4jRecords = TestUtilsEx.executeQueryAndReturn(query, transversalState)
       assert(queryResult.records.size == 1)
-      val result2: Neo4jRecords = TestUtils.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t", transversalState)
+      val result2: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t", transversalState)
       assert(result2.records.size == 1)
       val urlCat = result2.records.head.head.value.featureNode.get.url
-      val result3: Neo4jRecords = TestUtils.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t", transversalState)
+      val result3: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t", transversalState)
       assert(result3.records.size == 1)
       val urlDog = result3.records.head.head.value.featureNode.get.url
 
