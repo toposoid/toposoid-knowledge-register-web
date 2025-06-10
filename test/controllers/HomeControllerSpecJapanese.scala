@@ -70,19 +70,19 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
 
-      val knowledge1 = Knowledge(sentence = "これはテストの前提1です。", lang = "ja_JP", extentInfoJson = "{}")
-      val knowledge2 = Knowledge(sentence = "これはテストの前提2です。", lang = "ja_JP", extentInfoJson = "{}")
+      val knowledge1 = Knowledge(sentence = "これはテストの前提1です。", lang = "", extentInfoJson = "{}")
+      val knowledge2 = Knowledge(sentence = "これはテストの前提2です。", lang = "", extentInfoJson = "{}")
       val reference3 = Reference(url = "", surface = "猫が", surfaceIndex = 0, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg", metaInformations = List.empty[String])
       val imageReference3 = ImageReference(reference = reference3, x = 27, y = 41, width = 287, height = 435)
       val knowledgeForImages3 = KnowledgeForImage(id = "", imageReference = imageReference3)
-      val knowledge3 = Knowledge(sentence = "猫が２匹います。", lang = "ja_JP", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages3))
+      val knowledge3 = Knowledge(sentence = "猫が２匹います。", lang = "", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages3))
 
-      val knowledge4 = Knowledge(sentence = "これはテストの主張1です。", lang = "ja_JP", extentInfoJson = "{}")
-      val knowledge5 = Knowledge(sentence = "これはテストの主張2です。", lang = "ja_JP", extentInfoJson = "{}")
+      val knowledge4 = Knowledge(sentence = "これはテストの主張1です。", lang = "", extentInfoJson = "{}")
+      val knowledge5 = Knowledge(sentence = "これはテストの主張2です。", lang = "", extentInfoJson = "{}")
       val reference6 = Reference(url = "", surface = "犬が", surfaceIndex = 0, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg", metaInformations = List.empty[String])
       val imageReference6 = ImageReference(reference = reference6, x = 435, y = 227, width = 91, height = 69)
       val knowledgeForImages6 = KnowledgeForImage(id = "", imageReference = imageReference6)
-      val knowledge6 = Knowledge(sentence = "犬が1匹います。", lang = "ja_JP", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages6))
+      val knowledge6 = Knowledge(sentence = "犬が1匹います。", lang = "", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages6))
 
       val knowledgeSentenceSet: KnowledgeSentenceSet = KnowledgeSentenceSet(
         premiseList = List(knowledge1, knowledge2, knowledge3),

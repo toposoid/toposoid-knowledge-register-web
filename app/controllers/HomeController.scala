@@ -45,7 +45,8 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
     try{
       val json = request.body
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
-      val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = knowledgeSentenceSet, transversalState = transversalState)
+      val resKnowledgeSentenceSet: String =  ToposoidUtils.callComponent(Json.toJson(knowledgeSentenceSet).toString(), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_HOST"), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_PORT"), "detectLanguages", transversalState)
+      val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = Json.parse(resKnowledgeSentenceSet).as[KnowledgeSentenceSet], transversalState = transversalState)
       val jsonStr = Json.toJson(knowledgeRegistrationForManual).toString()
       MqUtils.publishMessage(jsonStr, conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
       logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
