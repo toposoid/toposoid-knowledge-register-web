@@ -22,6 +22,8 @@ services:
       - TOPOSOID_COMMON_NLP_JP_WEB_PORT=9006
       - TOPOSOID_COMMON_NLP_EN_WEB_HOST=toposoid-common-nlp-english-web
       - TOPOSOID_COMMON_NLP_EN_WEB_PORT=9008
+      - TOPOSOID_LANGUAGE_DETECTOR_HOST=toposoid-language-detector-web
+      - TOPOSOID_LANGUAGE_DETECTOR_PORT=9017
       - PLAY_HTTP_PORT=9002
   toposoid-sentence-parser-japanese-web:
     image: toposoid/toposoid-sentence-parser-japanese-web:0.6-SNAPSHOT-lowspec
@@ -264,3 +266,8 @@ services:
       - TZ=UTC
     ports:
       - 3306:3306
+      -
+  toposoid-language-detector-web:
+    image: toposoid/toposoid-language-detector-web:0.6-SNAPSHOT
+    ports:
+      - 9017:9017
