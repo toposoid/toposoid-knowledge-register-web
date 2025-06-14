@@ -145,6 +145,26 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
 
     }
   }
+
+  "HomeController POST(split)" should {
+    "returns an appropriate response" in {
+      val controller: HomeController = inject[HomeController]
+      val jsonStr: String =
+        """{
+          |    "sentence": "The GrandCanyon was registered as a national park in 1919."
+          |}
+          |""".stripMargin
+      val fr = FakeRequest(POST, "/split")
+        .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> Json.toJson(transversalState).toString())
+        .withJsonBody(Json.parse(jsonStr))
+      val result = call(controller.split(), fr)
+      status(result) mustBe OK
+      val jsonResult: String = contentAsJson(result).toString()
+      val correctJson = """[{"surface":"GrandCanyon","index":1},{"surface":"park","index":7}]"""
+      assert(jsonResult.equals(correctJson))
+    }
+  }
+
 }
 
 
