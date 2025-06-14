@@ -136,5 +136,24 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
     }
   }
 
+  "HomeController POST(split)" should {
+    "returns an appropriate response" in {
+      val controller: HomeController = inject[HomeController]
+      val jsonStr: String =
+        """{
+          |    "sentence": "富士山は、2013年に世界遺産に登録された。"
+          |}
+          |""".stripMargin
+      val fr = FakeRequest(POST, "/split")
+        .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> Json.toJson(transversalState).toString())
+        .withJsonBody(Json.parse(jsonStr))
+      val result = call(controller.split(), fr)
+      status(result) mustBe OK
+      val jsonResult: String = contentAsJson(result).toString()
+      val correctJson = """[{"surface":"富士山は、","index":0},{"surface":"２０１３年に","index":1},{"surface":"世界遺産に","index":2},{"surface":"登録された。","index":3}]"""
+      assert(jsonResult.equals(correctJson))
+    }
+  }
+
 }
 
