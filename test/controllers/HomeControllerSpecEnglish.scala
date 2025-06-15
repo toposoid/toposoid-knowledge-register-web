@@ -159,9 +159,10 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
         .withJsonBody(Json.parse(jsonStr))
       val result = call(controller.split(), fr)
       status(result) mustBe OK
-      val jsonResult: String = contentAsJson(result).toString()
+      val jsonResult = contentAsJson(result).toString()
       val correctJson = """[{"surface":"GrandCanyon","index":1},{"surface":"park","index":7}]"""
-      assert(jsonResult.equals(correctJson))
+      assert(Json.parse(jsonResult) == Json.parse(correctJson))
+
     }
   }
 
