@@ -72,14 +72,29 @@ curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STAT
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         },
         {
             "sentence": "これはテストの前提2です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }            
         }
     ],
     "premiseLogicRelation": [
@@ -95,14 +110,30 @@ curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STAT
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         },
         {
             "sentence": "これはテストの主張2です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         }
     ],
     "claimLogicRelation": [
@@ -126,7 +157,14 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }            
         }
     ],
     "claimLogicRelation": []
@@ -142,14 +180,37 @@ curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STAT
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+        },
+        "documentPageReference": {
+          "pageNo": -1,
+          "references": [],
+          "tableOfContents": [],
+          "headlines": []
+        }
+            
         },
         {
             "sentence": "This is premise-2.",
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         }
     ],
     "premiseLogicRelation": [
@@ -165,14 +226,29 @@ curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STAT
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         },
         {
             "sentence": "This is claim-2.",
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }            
         }
     ],
     "claimLogicRelation": [
