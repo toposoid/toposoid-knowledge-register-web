@@ -180,7 +180,7 @@ services:
       CLUSTER_HOSTNAME: 'node1'
 
   data-accessor-neo4j-web:
-    image: toposoid/data-accessor-neo4j-web:0.6-SNAPSHOT-lowspec
+    image: toposoid/data-accessor-neo4j-web:0.6-SNAPSHOT
     environment:
       - PRIVATE_IP_ADDRESS=data-accessor-neo4j-web
       - TOPOSOID_GRAPHDB_HOST=neo4j
