@@ -33,7 +33,7 @@ This Microservice registers the results of predicate argument structure analysis
 
 ## Recommended Environment For Standalone
 * Required: at least 16GB of RAM
-* Required: at least 46G of HDD(Total required Docker Image size)
+* Required: at least 50G of HDD(Total required Docker Image size)
 * Please understand that since we are dealing with large models such as LLM, the Dockerfile size is large and the required machine SPEC is high.
 
 ## Setup For Standalone
@@ -148,7 +148,7 @@ curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STAT
 #-----------------------------------------
 #Case3 A Simple Sentence in English
 #-----------------------------------------
-curl -X POST -H "Content-Type: application/json" -d '{
+curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STATE: {"userId":"test-user", "username":"guest", "roleId":0, "csrfToken":""}' -d '{
     "premiseList": [],
     "premiseLogicRelation": [],
     "claimList": [
