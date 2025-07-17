@@ -19,6 +19,7 @@ package controllers
 
 import akka.actor.ActorSystem
 import com.ideal.linked.common.DeploymentConverter.conf
+import com.ideal.linked.toposoid.common.ToposoidUtils.{escapeDoubleQuote, escapeSingleQuote}
 import com.ideal.linked.toposoid.common.mq.{KnowledgeRegistrationForManual, MqUtils}
 import com.ideal.linked.toposoid.common.{TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.nlp.model.{SingleSentence, SurfaceInfo}
@@ -52,8 +53,7 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
     try{
       val json = request.body
       val knowledgeSentenceSet: KnowledgeSentenceSet = Json.parse(json.toString).as[KnowledgeSentenceSet]
-      val resKnowledgeSentenceSet: String =  ToposoidUtils.callComponent(Json.toJson(knowledgeSentenceSet).toString(), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_HOST"), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_PORT"), "detectLanguages", transversalState)
-      val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = Json.parse(resKnowledgeSentenceSet).as[KnowledgeSentenceSet], transversalState = transversalState)
+      val knowledgeRegistrationForManual = KnowledgeRegistrationForManual(knowledgeSentenceSet = preprocess(knowledgeSentenceSet, transversalState) , transversalState = transversalState)
       val jsonStr = Json.toJson(knowledgeRegistrationForManual).toString()
       MqUtils.publishMessage(jsonStr, conf.getString("TOPOSOID_MQ_HOST"), conf.getString("TOPOSOID_MQ_PORT"), conf.getString("TOPOSOID_MQ_KNOWLEDGE_REGISTER_QUENE"))
       logger.info(ToposoidUtils.formatMessageForLogger("Registration completed", transversalState.userId))
@@ -70,9 +70,7 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE.str).get).as[TransversalState]
     try {
       val json = request.body
-      val singleSentence: SingleSentence = Json.parse(json.toString).as[SingleSentence]
-      val resDetectedLanguage = ToposoidUtils.callComponent(Json.toJson(singleSentence).toString(), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_HOST"), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_PORT"), "detectLanguage", transversalState)
-      val detectedLanguage =  Json.parse(resDetectedLanguage).as[DetectedLanguage]
+      val (singleSentence:SingleSentence, detectedLanguage:DetectedLanguage) = preprocess(Json.parse(json.toString).as[SingleSentence], transversalState)
       val surfaceInfoList:List[SurfaceInfo] = detectedLanguage.lang match {
         case "ja_JP" => {
           val  res = ToposoidUtils.callComponent(json.toString() ,conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_HOST"), conf.getString("TOPOSOID_SENTENCE_PARSER_JP_WEB_PORT"), "split", transversalState)
@@ -97,5 +95,22 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
     }
   }
 
+  private def preprocess(knowledgeSentenceSet:KnowledgeSentenceSet, transversalState:TransversalState):KnowledgeSentenceSet = {
+    val preprocessedKnowledgeSentenceSet = KnowledgeSentenceSet(
+      premiseList = ToposoidUtils.preprocessForSentence(knowledgeSentenceSet.premiseList),
+      premiseLogicRelation = knowledgeSentenceSet.premiseLogicRelation,
+      claimList = ToposoidUtils.preprocessForSentence(knowledgeSentenceSet.claimList),
+      claimLogicRelation = knowledgeSentenceSet.claimLogicRelation
+    )
+    val resKnowledgeSentenceSet: String =  ToposoidUtils.callComponent(Json.toJson(preprocessedKnowledgeSentenceSet).toString(), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_HOST"), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_PORT"), "detectLanguages", transversalState)
+    Json.parse(resKnowledgeSentenceSet).as[KnowledgeSentenceSet]
+  }
+
+  private def preprocess(singleSentence: SingleSentence, transversalState: TransversalState): (SingleSentence, DetectedLanguage) = {
+    val resDetectedLanguage = ToposoidUtils.callComponent(Json.toJson(singleSentence).toString(), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_HOST"), conf.getString("TOPOSOID_LANGUAGE_DETECTOR_PORT"), "detectLanguage", transversalState)
+    val detectedLanguage = Json.parse(resDetectedLanguage).as[DetectedLanguage]
+    val preprocessedSentence = escapeDoubleQuote(escapeSingleQuote(singleSentence.sentence))
+    (SingleSentence(sentence=preprocessedSentence), detectedLanguage)
+  }
 
 }
