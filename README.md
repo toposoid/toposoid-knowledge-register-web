@@ -3,7 +3,7 @@ This is a WEB API that works as a microservice within the toposoid project.
 Toposoid is a knowledge base construction platform.(see [Toposoid　Root Project](https://github.com/toposoid/toposoid.git))
 This Microservice registers the results of predicate argument structure analysis of Japanese natural sentences in a graph database.
 
-[![Unit Test And Build Image Action](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml/badge.svg?branch=main)](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml)
+[![.github/workflows/action.yml](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml/badge.svg)](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml)
 
 * input
 
