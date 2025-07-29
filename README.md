@@ -3,7 +3,7 @@ This is a WEB API that works as a microservice within the toposoid project.
 Toposoid is a knowledge base construction platform.(see [Toposoid　Root Project](https://github.com/toposoid/toposoid.git))
 This Microservice registers the results of predicate argument structure analysis of Japanese natural sentences in a graph database.
 
-[![Unit Test And Build Image Action](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml/badge.svg?branch=main)](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml)
+[![.github/workflows/action.yml](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml/badge.svg)](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml)
 
 * input
 
@@ -33,7 +33,7 @@ This Microservice registers the results of predicate argument structure analysis
 
 ## Recommended Environment For Standalone
 * Required: at least 16GB of RAM
-* Required: at least 46G of HDD(Total required Docker Image size)
+* Required: at least 50G of HDD(Total required Docker Image size)
 * Please understand that since we are dealing with large models such as LLM, the Dockerfile size is large and the required machine SPEC is high.
 
 ## Setup For Standalone
@@ -47,7 +47,7 @@ docker-compose up
 #-----------------------------------------
 #Case1 A Simple Sentence in Japanese
 #-----------------------------------------
-curl -X POST -H "Content-Type: application/json" -d '{
+curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STATE: {"userId":"test-user", "username":"guest", "roleId":0, "csrfToken":""}' -d '{
     "premiseList": [],
     "premiseLogicRelation": [],
     "claimList": [
@@ -65,21 +65,36 @@ curl -X POST -H "Content-Type: application/json" -d '{
 #-----------------------------------------
 #Case2 Multiple Sentences in Japanese
 #-----------------------------------------
-curl -X POST -H "Content-Type: application/json" -d {
+curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STATE: {"userId":"test-user", "username":"guest", "roleId":0, "csrfToken":""}' -d {
     "premiseList": [
         {
             "sentence": "これはテストの前提1です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         },
         {
             "sentence": "これはテストの前提2です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }            
         }
     ],
     "premiseLogicRelation": [
@@ -95,14 +110,30 @@ curl -X POST -H "Content-Type: application/json" -d {
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         },
         {
             "sentence": "これはテストの主張2です。",
             "lang": "ja_JP",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         }
     ],
     "claimLogicRelation": [
@@ -117,7 +148,7 @@ curl -X POST -H "Content-Type: application/json" -d {
 #-----------------------------------------
 #Case3 A Simple Sentence in English
 #-----------------------------------------
-curl -X POST -H "Content-Type: application/json" -d '{
+curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STATE: {"userId":"test-user", "username":"guest", "roleId":0, "csrfToken":""}' -d '{
     "premiseList": [],
     "premiseLogicRelation": [],
     "claimList": [
@@ -126,7 +157,14 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }            
         }
     ],
     "claimLogicRelation": []
@@ -135,21 +173,44 @@ curl -X POST -H "Content-Type: application/json" -d '{
 #-----------------------------------------
 #Case4 Multiple Sentences in English
 #-----------------------------------------
-curl -X POST -H "Content-Type: application/json" -d '{
+curl -X POST -H "Content-Type: application/json" -H 'X_TOPOSOID_TRANSVERSAL_STATE: {"userId":"test-user", "username":"guest", "roleId":0, "csrfToken":""}' -d '{
     "premiseList": [
         {
             "sentence": "This is premise-1.",
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+        },
+        "documentPageReference": {
+          "pageNo": -1,
+          "references": [],
+          "tableOfContents": [],
+          "headlines": []
+        }
+            
         },
         {
             "sentence": "This is premise-2.",
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         }
     ],
     "premiseLogicRelation": [
@@ -165,14 +226,29 @@ curl -X POST -H "Content-Type: application/json" -d '{
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }
+            
         },
         {
             "sentence": "This is claim-2.",
             "lang": "en_US",
             "extentInfoJson": "{}",
             "isNegativeSentence": false,
-            "knowledgeForImages": []
+            "knowledgeForImages": [],
+            "knowledgeForTables": [],
+            "knowledgeForDocument": {
+              "id": "",
+              "filename": "",
+              "url": "",
+              "titleOfTopPage": ""
+            }            
         }
     ],
     "claimLogicRelation": [
@@ -185,111 +261,25 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:9002/regist
 ```
 * Images are registered when KnowledgeForImages is set.
-can.
-
-* KnowledgeSentenceSet
-
-| name | type                     | explanation   |
-| ------------- |--------------------------|---------------|
-| premiseList | List[Knowledge]          | see Knowledge |
-| premiseLogicRelation | List[PropositionRelation] | see PropositionRelation   |
-| claimList | List[Knowledge] | see Knowledge |
-| claimLogicRelation | List[PropositionRelation]                   | see PropositionRelation |
-
-* Knowledge
-
-| name | type    | explanation                                              |
-| ------------- |---------|----------------------------------------------------------|
-| sentence | String  | sentence                                                 |
-| lang | String  | ja_JP or en_US                                           |
-| extentInfoJson | String  | Additional information can be registered in Json format. |
-| isNegativeSentence | Boolean | Currently fixed to False                                 |
-| knowledgeForImages | List[KnowledgeForImage]  | see KnowledgeForImage                                    |
-
-* PropositionRelation
-
-| name | type   | explanation                                                                       |
-| ------------- |--------|-----------------------------------------------------------------------------------|
-| operator | String | 'AND' 'OR'                                                                        |
-| sourceIndex | Int    | Source for binary operation. Specified by index of premiseList or claimList.      |
-| destinationIndex | Int    | Destination for binary operation. Specified by index of premiseList or claimList. |
-
-* KnowledgeForImage
-
-| name           | type    | explanation                       |
-|----------------|---------|-----------------------------------|
-| id             | String  | Unique id that identifies the image |
-| imageReference | ImageReference  | see ImageReference  |
-
-* ImageReference
-
-| name      | type      | explanation        |
-|-----------|-----------|--------------------|
-| reference | Reference | see Reference     |
-| x         | Int       | x coordinate of image TOP |
-| y         | Int       |  coordinate of image TOP |
-| width     | Int       | Image width |
-| height    | Int       | Image height |
-
-* Reference
-
-| name    | type      | explanation                                                               |
-|---------|-----------|---------------------------------------------------------------------------|
-| url | String | url                                                                       |
-| surface        | String    | Words in the text linked to images                                        |
-| surfaceIndex        | Int       | Index in the sentence                                                     |
-| isWholeSentence   | Boolean   | True if the image is associated with the entire sentence, otherwise False |
-| originalUrlOrReference  | String       | original url                                                              |
-
-
-Try accessing http://localhost:7474 in your browser.
-You will be able to see the data you registered from the API.
-as follows
-<img width="1597" src="https://github.com/toposoid/toposoid-knowledge-register-web/assets/82787843/b18a893f-97ab-49fc-aa32-bb5d322274c0">
-
-
-## Note
-* This microservice uses 9002 as the default port.
-* If you want to run in a remote environment or a virtual environment, change PRIVATE_IP_ADDRESS in docker-compose.yml according to your environment.
-* The memory allocated to Neo4J can be adjusted with NEO4J_dbms_memory_heap_max__size in docker-compose.yml.  
-* The Node's Information In A Graph Database
-
-| name | content(Japanse) |content(English)|
-| ------------- | ------------- | ------------- |
-| nodeId | 文章の文節を識別するID | ID that identifies the morpheme in the text |
-| propositionId | 命題としての文章集合を識別するID |　Same as Japanese |
-| currentId | 文章の何番目の文節かを識別するID | ID of token parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/) |
-| parentId | 当該の文節が係っている文節のID | ID of token.head parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/)　|
-| isMainSection | 文末を表すフラグ ture/false | Same as Japanese |
-| surface | 文節の表層 |token.text parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/)　 |
-| normalizedName | 文節の正規化表現（KNPのfeatureの正規化代表表記参照） |token.lemma parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/)　|
-| dependType　| 親の文節との関係　依存関係:D、並列関係:P | - |
-| caseType | 文節の格情報（KNPのfeatureの係参照） | [Stanford Dependencies](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf)|
-| namedEntity | 固有表現（KNPのfeatureのNE参照） | Mainly NER calculated from [spacy's](https://spacy.io/) [en_core_web_lg](https://spacy.io/models/en#en_core_web_lg) model |
-| rangeExpressions | 範囲表現 | Same as Japanese |
-| categories | カテゴリ（KNPのfeatureのカテゴリ参照） | - |
-| domains | ドメイン（KNPのfeatureのドメイン参照） | - |
-| isDenialWord | 否定表現を表すフラグ true/false (KNPのfeatureの否定参照) |　Negatives analyzed by [Core NLP's Depedency](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf)　|
-| isConditionalConnection | 条件節及びそれに類する節を表すフラグ（KNPのfeatureの条件節候補参照） | Conditional clause analyzed by [Depedency of CoreNLP](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf) |
-| normalizedNameYomi　| 文節の正規化表現の読み仮名 | - |
-| surfaceYomi | 文節の表層の読み仮名 | - |
-| modalityType | モダリティ（KNPのfeatureのモダリティ参照） | - |
-| logicType | (KNPの並列タイプ参照、その他包含関係はIMPという種別もあり) | - |
-| nodeType | com.ideal.linked.toposoid.common.SentenceType |　Same as Japanese |
-| extentText | 拡張領域 |Same as Japanese |
-
-The Edge's Information In A Graph Database
-
-| name | content(Japanese) | content(English) |
-| ------------- | ------------- | ------------- |
-| sourceId | 文節間の関係で係受けの子を識別するID | ID of token parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/) |
-| destinationId　| 文節間の関係で係受けの親を識別するID | ID of token.head parsed by [CoreNLP](https://stanfordnlp.github.io/CoreNLP/)　|
-| caseStr　| 文節間の関係（格構造 etc） | [Stanford Dependencies](https://downloads.cs.stanford.edu/nlp/software/dependencies_manual.pdf) |
-| dependType | KnowledgeBaseNodeのdependType参照 | - |
-| logicType　| KnowledgeBaseNodeのlogicType参照 | - |
 
 ## License
-toposoid/toposoid-knowledge-register-web is Open Source software released under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0.html).
+This program is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://toposoid.com/contact.  For AGPL licensing, see below.
+
+AGPL licensing:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 ## Author
 * Makoto Kubodera([Linked Ideal LLC.](https://linked-ideal.com/))

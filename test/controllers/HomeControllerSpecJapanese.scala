@@ -1,30 +1,30 @@
 /*
- * Copyright 2021 Linked Ideal LLC.[https://linked-ideal.com/]
+ * Copyright (C) 2025  Linked Ideal LLC.[https://linked-ideal.com/]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package controllers
 
 import com.ideal.linked.common.DeploymentConverter.conf
-import com.ideal.linked.data.accessor.neo4j.Neo4JAccessor
-import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, ToposoidUtils}
+import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorId, FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
 import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
 import com.ideal.linked.toposoid.knowledgebase.nlp.model.{FeatureVector, SingleSentence}
-import com.ideal.linked.toposoid.knowledgebase.regist.model.{Knowledge, KnowledgeSentenceSet}
+import com.ideal.linked.toposoid.knowledgebase.regist.model.{ImageReference, Knowledge, KnowledgeForImage, KnowledgeSentenceSet, PropositionRelation, Reference}
+import com.ideal.linked.toposoid.protocol.model.neo4j.Neo4jRecords
 import com.ideal.linked.toposoid.vectorizer.FeatureVectorizer
-import org.neo4j.driver.{Record, Result}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll}
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
@@ -43,144 +43,78 @@ import scala.concurrent.duration.Duration
  */
 class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with BeforeAndAfterAll with GuiceOneAppPerTest with Injecting {
 
+  val transversalState = TransversalState(userId="test-user", username="guest", roleId=0, csrfToken = "")
+
   override def beforeAll(): Unit = {
-    ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "createSchema")
-    ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "createSchema")
-    Neo4JAccessor.delete()
+    ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
+    ToposoidUtils.callComponent("{}", conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "createSchema", transversalState)
+    TestUtilsEx.deleteNeo4JAllData(transversalState)
   }
 
   private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier, featureType: FeatureType):Unit = {
     val json: String = Json.toJson(featureVectorIdentifier).toString()
     if(featureType.equals(SENTENCE)){
-      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "delete")
+      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "delete", transversalState)
     }else if(featureType.equals(IMAGE)){
-      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "delete")
+      ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "delete", transversalState)
     }
   }
 
   private def getImageVector(url: String): FeatureVector = {
     val singleImage = SingleImage(url)
     val json: String = Json.toJson(singleImage).toString()
-    val featureVectorJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_HOST"), conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT"), "getFeatureVector")
+    val featureVectorJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_HOST"), conf.getString("TOPOSOID_COMMON_IMAGE_RECOGNITION_PORT"), "getFeatureVector", transversalState)
     Json.parse(featureVectorJson).as[FeatureVector]
   }
 
   "HomeController POST(japanese KnowledgeSentenceSet)" should {
     "returns an appropriate response" in {
       val controller: HomeController = inject[HomeController]
-      val jsonStr:String = """{
-                             |	"premiseList": [
-                             |		{
-                             |			"sentence": "これはテストの前提1です。",
-                             |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence": false,
-                             |      "knowledgeForImages": []
-                             |		},
-                             |		{
-                             |			"sentence": "これはテストの前提2です。",
-                             |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence": false,
-                             |      "knowledgeForImages": []
-                             |		},
-                             |		{
-                             |			"sentence": "猫が２匹います。",
-                             |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence": false,
-                             |      "knowledgeForImages":[{
-                             |                             "id": "",
-                             |                             "imageReference": {
-                             |                               "reference": {
-                             |                                      "url": "",
-                             |                                      "surface": "猫が",
-                             |                                      "surfaceIndex": 0,
-                             |                                      "isWholeSentence": false,
-                             |                                      "originalUrlOrReference": "http://images.cocodataset.org/val2017/000000039769.jpg"},
-                             |                               "x": 27,
-                             |                               "y": 41,
-                             |                               "width": 287,
-                             |                               "height": 435
-                             |                               }
-                             |                            }]
-                             |		}
-                             |	],
-                             |	"premiseLogicRelation": [
-                             |		{
-                             |			"operator": "AND",
-                             |			"sourceIndex": 0,
-                             |			"destinationIndex": 1
-                             |		}
-                             |	],
-                             |	"claimList": [
-                             |		{
-                             |			"sentence": "これはテストの主張1です。",
-                             |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence": false,
-                             |      "knowledgeForImages": []
-                             |		},
-                             |		{
-                             |			"sentence": "これはテストの主張2です。",
-                             |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence": false,
-                             |      "knowledgeForImages": []
-                             |		},
-                             |		{
-                             |			"sentence": "犬が1匹います。",
-                             |			"lang": "ja_JP",
-                             |			"extentInfoJson": "{}",
-                             |      "isNegativeSentence": false,
-                             |      "knowledgeForImages":[{
-                             |                             "id": "",
-                             |                             "imageReference": {
-                             |                               "reference": {
-                             |                                      "url": "",
-                             |                                      "surface": "犬が",
-                             |                                      "surfaceIndex": 0,
-                             |                                      "isWholeSentence": false,
-                             |                                      "originalUrlOrReference": "http://images.cocodataset.org/train2017/000000428746.jpg"},
-                             |                               "x": 435,
-                             |                               "y": 227,
-                             |                               "width": 91,
-                             |                               "height": 69
-                             |                               }
-                             |                            }]
-                             |		}
-                             |
-                             |	],
-                             |	"claimLogicRelation": [
-                             |		{
-                             |			"operator": "OR",
-                             |			"sourceIndex": 0,
-                             |			"destinationIndex": 1
-                             |		}
-                             |	]
-                             |}""".stripMargin
-      val fr = FakeRequest(POST, "/regist")
-        .withHeaders("Content-type" -> "application/json")
+
+      val knowledge1 = Knowledge(sentence = "これはテストの前提1です。", lang = "", extentInfoJson = "{}")
+      val knowledge2 = Knowledge(sentence = "これはテストの前提2です。", lang = "", extentInfoJson = "{}")
+      val reference3 = Reference(url = "", surface = "猫が", surfaceIndex = 0, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg", metaInformations = List.empty[String])
+      val imageReference3 = ImageReference(reference = reference3, x = 27, y = 41, width = 287, height = 435)
+      val knowledgeForImages3 = KnowledgeForImage(id = "", imageReference = imageReference3)
+      val knowledge3 = Knowledge(sentence = "猫が２匹います。", lang = "", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages3))
+
+      val knowledge4 = Knowledge(sentence = "これはテストの主張1です。", lang = "", extentInfoJson = "{}")
+      val knowledge5 = Knowledge(sentence = "これはテストの主張2です。", lang = "", extentInfoJson = "{}")
+      val reference6 = Reference(url = "", surface = "犬が", surfaceIndex = 0, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg", metaInformations = List.empty[String])
+      val imageReference6 = ImageReference(reference = reference6, x = 435, y = 227, width = 91, height = 69)
+      val knowledgeForImages6 = KnowledgeForImage(id = "", imageReference = imageReference6)
+      val knowledge6 = Knowledge(sentence = "犬が1匹います。", lang = "", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages6))
+
+      val knowledgeSentenceSet: KnowledgeSentenceSet = KnowledgeSentenceSet(
+        premiseList = List(knowledge1, knowledge2, knowledge3),
+        premiseLogicRelation = List(PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2)),
+        claimList = List(knowledge4, knowledge5, knowledge6),
+        claimLogicRelation = List(PropositionRelation(operator = "OR", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2))
+      )
+      val jsonStr = Json.toJson(knowledgeSentenceSet).toString()
+
+      val fr = FakeRequest(POST, "/registerForManual")
+        .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> Json.toJson(transversalState).toString())
         .withJsonBody(Json.parse(jsonStr))
-      val result= call(controller.regist(), fr)
+      val result= call(controller.registerForManual(), fr)
       status(result) mustBe OK
-      Thread.sleep(30000)
+      Thread.sleep(60000)
       val query = "MATCH x=(:ClaimNode{surface:'主張２です。'})<-[:LocalEdge{logicType:'OR'}]-(:ClaimNode{surface:'主張１です。'})<-[:LocalEdge{logicType:'IMP'}]-(:PremiseNode{surface:'前提１です。'})-[:LocalEdge{logicType:'AND'}]->(:PremiseNode{surface:'前提２です。'}) return x"
-      val queryResult:Result = Neo4JAccessor.executeQueryAndReturn(query)
-      assert(queryResult.hasNext())
-      val result2: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t")
-      assert(result2.hasNext)
-      val urlCat = result2.next().get("s").get("url").asString()
-      val result3: Result = Neo4JAccessor.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t")
-      assert(result3.hasNext)
-      val urlDog = result3.next().get("s").get("url").asString()
+      val queryResult:Neo4jRecords = TestUtilsEx.executeQueryAndReturn(query, transversalState)
+      assert(queryResult.records.size == 1)
+      val result2: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'猫が'}) RETURN s, t", transversalState)
+      assert(result2.records.size == 1)
+      val urlCat = result2.records.head.head.value.featureNode.get.url
+      val result3: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'犬が'}) RETURN s, t", transversalState)
+      assert(result3.records.size == 1)
+      val urlDog = result3.records.head.head.value.featureNode.get.url
 
-      val knowledgeSentenceSet:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
+      val knowledgeSentenceSet2:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
 
-      for(knowledge <- knowledgeSentenceSet.premiseList:::knowledgeSentenceSet.claimList){
-        val vector = FeatureVectorizer.getSentenceVector(Knowledge(knowledge.sentence, "ja_JP", "{}"))
+      for(knowledge <- knowledgeSentenceSet2.premiseList:::knowledgeSentenceSet2.claimList){
+        val vector = FeatureVectorizer.getSentenceVector(Knowledge(knowledge.sentence, "ja_JP", "{}"), transversalState)
         val json:String = Json.toJson(SingleFeatureVectorForSearch(vector=vector.vector, num=1)).toString()
-        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "search")
+        val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
         val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
         assert(result.ids.size > 0 && result.similarities.head > 0.999)
         result.ids.map(x => deleteFeatureVector(x, SENTENCE))
@@ -193,13 +127,34 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
           }
           val vector = this.getImageVector(url)
           val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = 1)).toString()
-          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search")
+          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
           val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
           assert(result.ids.size > 0 && result.similarities.head > 0.999)
           result.ids.map(x => deleteFeatureVector(x, IMAGE))
         })
       }
+
+    }
+  }
+
+  "HomeController POST(split)" should {
+    "returns an appropriate response" in {
+      val controller: HomeController = inject[HomeController]
+      val jsonStr: String =
+        """{
+          |    "sentence": "富士山は、2013年に世界遺産に登録された。"
+          |}
+          |""".stripMargin
+      val fr = FakeRequest(POST, "/split")
+        .withHeaders("Content-type" -> "application/json", TRANSVERSAL_STATE.str -> Json.toJson(transversalState).toString())
+        .withJsonBody(Json.parse(jsonStr))
+      val result = call(controller.split(), fr)
+      status(result) mustBe OK
+      val jsonResult = contentAsJson(result).toString()
+      val correctJson = """[{"surface":"富士山は、","index":0},{"surface":"２０１３年に","index":1},{"surface":"世界遺産に","index":2},{"surface":"登録された。","index":3}]"""
+      assert(Json.parse(jsonResult) == Json.parse(correctJson))
     }
   }
 
 }
+

@@ -8,3 +8,7 @@ target
 /.settings
 /RUNNING_PID
 .DS_Store
+docker-compose-local.yml
+.DS_Store
+/test*.json
+/test/.DS_Store
