@@ -1,7 +1,7 @@
 # toposoid-knowledge-register-web
 This is a WEB API that works as a microservice within the toposoid project.
 Toposoid is a knowledge base construction platform.(see [Toposoid　Root Project](https://github.com/toposoid/toposoid.git))
-This Microservice registers the results of predicate argument structure analysis of Japanese natural sentences in a graph database.
+This microservice provides the functionality for manual registration.
 
 [![.github/workflows/action.yml](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml/badge.svg)](https://github.com/toposoid/toposoid-knowledge-register-web/actions/workflows/action.yml)
 
