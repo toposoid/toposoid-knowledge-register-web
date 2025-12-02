@@ -32,6 +32,7 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
+import play.api.libs.json.JsValue
 
 case class DetectedLanguage(lang:String)
 object DetectedLanguage {
@@ -46,9 +47,10 @@ object DetectedLanguage {
  * @param ec
  */
 @Singleton
-class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) with LazyLogging{
+class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController  with LazyLogging{
+//class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) with LazyLogging{
 
-  def registerForManual()  = Action(parse.json) { request =>
+  def registerForManual():Action[JsValue]  = Action(parse.json[JsValue]) { request =>
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE .str).get).as[TransversalState]
     try{
       val json = request.body
@@ -66,7 +68,7 @@ class HomeController @Inject()(system: ActorSystem, cc: ControllerComponents)(im
     }
   }
 
-  def split() = Action(parse.json) { request =>
+  def split():Action[JsValue] = Action(parse.json[JsValue]) { request =>
     val transversalState = Json.parse(request.headers.get(TRANSVERSAL_STATE.str).get).as[TransversalState]
     try {
       val json = request.body

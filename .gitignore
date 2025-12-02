@@ -12,3 +12,8 @@ docker-compose-local.yml
 .DS_Store
 /test*.json
 /test/.DS_Store
+.devcontainer
+.metals
+.vscode
+project/project
+project/metals.sbt
