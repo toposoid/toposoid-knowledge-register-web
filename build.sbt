@@ -17,6 +17,7 @@ libraryDependencies += "com.ideal.linked" %% "toposoid-common" % "0.7-SNAPSHOT"
 libraryDependencies += "com.ideal.linked" %% "toposoid-sentence-transformer-neo4j" % "0.7-SNAPSHOT" % Test
 libraryDependencies += "com.ideal.linked" %% "toposoid-feature-vectorizer" % "0.7-SNAPSHOT" % Test
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.2" % Test
+parallelExecution in Test := false
 
 organizationName := "Linked Ideal LLC.[https://linked-ideal.com/]"
 startYear := Some(2021)
