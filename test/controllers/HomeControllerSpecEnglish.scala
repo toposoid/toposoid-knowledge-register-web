@@ -18,7 +18,7 @@
 package controllers
 
 import com.ideal.linked.common.DeploymentConverter.conf
-import com.ideal.linked.toposoid.common.{FeatureType, IMAGE, SENTENCE, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
+import com.ideal.linked.toposoid.common.{FeatureType, TRANSVERSAL_STATE, ToposoidUtils, TransversalState}
 import com.ideal.linked.toposoid.knowledgebase.featurevector.model.{FeatureVectorIdentifier, FeatureVectorSearchResult, SingleFeatureVectorForSearch}
 import com.ideal.linked.toposoid.knowledgebase.image.model.SingleImage
 import com.ideal.linked.toposoid.knowledgebase.nlp.model.FeatureVector
@@ -52,9 +52,9 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
 
   private def deleteFeatureVector(featureVectorIdentifier: FeatureVectorIdentifier, featureType: FeatureType): Unit = {
     val json: String = Json.toJson(featureVectorIdentifier).toString()
-    if (featureType.equals(SENTENCE)) {
+    if (featureType.equals(FeatureType.SENTENCE)) {
       ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "delete", transversalState)
-    } else if (featureType.equals(IMAGE)) {
+    } else if (featureType.equals(FeatureType.IMAGE)) {
       ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "delete", transversalState)
     }
   }
@@ -126,7 +126,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
         val featureVectorSearchResultJson:String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_SENTENCE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
         val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
         assert(result.ids.size > 0)
-        result.ids.map(x => deleteFeatureVector(x, SENTENCE))
+        result.ids.map(x => deleteFeatureVector(x, FeatureType.SENTENCE))
 
         knowledge.knowledgeForImages.foreach(x => {
           val url: String = x.imageReference.reference.surface match {
@@ -139,7 +139,7 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
           val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
           val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
           assert(result.ids.size > 0 && result.similarities.head > 0.999)
-          result.ids.map(x => deleteFeatureVector(x, IMAGE))
+          result.ids.map(x => deleteFeatureVector(x, FeatureType.IMAGE))
         })
 
       }
