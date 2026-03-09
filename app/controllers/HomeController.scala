@@ -17,7 +17,6 @@
 
 package controllers
 
-import akka.actor.ActorSystem
 import com.ideal.linked.common.DeploymentConverter.conf
 import com.ideal.linked.toposoid.common.ToposoidUtils.{escapeDoubleQuote, escapeSingleQuote}
 import com.ideal.linked.toposoid.common.mq.{KnowledgeRegistrationForManual, MqUtils}
