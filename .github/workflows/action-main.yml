@@ -10,10 +10,10 @@ env:
   PJ_BRANCH: feature
   PJ_VERSION: 0.7-SNAPSHOT
 jobs:
-  nit-test_toposoid-knowledge-register-web-amd64:
+  unit-test_toposoid-knowledge-register-web-amd64:
     uses: ./.github/workflows/action-amd64.yml
     secrets: inherit  
-  nit-test_toposoid-knowledge-register-web-arm64:
+  unit-test_toposoid-knowledge-register-web-arm64:
     uses: ./.github/workflows/action-arm64.yml
     secrets: inherit  
   merge-and-push-base-manifest: 
