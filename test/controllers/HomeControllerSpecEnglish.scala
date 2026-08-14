@@ -34,6 +34,15 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.{POST, call, status, _}
 import play.api.test.{FakeRequest, _}
 
+import scala.concurrent.duration.Duration
+import controllers.TestUtilsEx.uploadImage
+import controllers.TestUtilsEx.uploadTable
+import com.ideal.linked.toposoid.knowledgebase.regist.model.KnowledgeForTable
+import com.ideal.linked.toposoid.knowledgebase.regist.model.TableReference
+import controllers.TestUtilsEx.deleteFeatureVector
+import controllers.TestUtilsEx.getImageVector
+
+
 /**
  * Add your spec here.
  * You can mock out a whole application including requests, plugins etc.
@@ -74,21 +83,31 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
       val knowledge2 = Knowledge(sentence = "This is premise-2.", lang = "", extentInfoJson = "{}")
       val reference3 = Reference(url = "", surface = "cats", surfaceIndex = 3, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/val2017/000000039769.jpg", metaInformations = List.empty[String])
       val imageReference3 = ImageReference(reference = reference3, x = 27, y = 41, width = 287, height = 435)
-      val knowledgeForImages3 = KnowledgeForImage(id = "", imageReference = imageReference3)
+      val knowledgeForImages3 = uploadImage(KnowledgeForImage(id = "", imageReference = imageReference3), transversalState)
       val knowledge3 = Knowledge(sentence = "There are two cats.", lang = "", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages3))
+
+      val reference3a= Reference(url = "", surface = "data", surfaceIndex = 3, isWholeSentence = false, originalUrlOrReference = "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000001086170&fileKind=0", metaInformations = List.empty[String])
+      val tableReference3a = TableReference(reference = reference3a, skipHeaderRows= 5, multiHeaderRowsForExcel=4, sheetNameForExcel="se0101")
+      val knowledgeForTable3a = uploadTable(KnowledgeForTable(id = "", tableReference = tableReference3a), transversalState)
+      val knowledge3a = Knowledge(sentence = "There is a data.", lang = "", extentInfoJson = "{}", knowledgeForTables=List(knowledgeForTable3a))
 
       val knowledge4 = Knowledge(sentence = "This is claim-1.", lang = "", extentInfoJson = "{}")
       val knowledge5 = Knowledge(sentence = "This is claim-2.", lang = "", extentInfoJson = "{}")
       val reference6 = Reference(url = "", surface = "dog", surfaceIndex = 3, isWholeSentence = false, originalUrlOrReference = "http://images.cocodataset.org/train2017/000000428746.jpg", metaInformations = List.empty[String])
       val imageReference6 = ImageReference(reference = reference6, x = 435, y = 227, width = 91, height = 69)
-      val knowledgeForImages6 = KnowledgeForImage(id = "", imageReference = imageReference6)
+      val knowledgeForImages6 = uploadImage(KnowledgeForImage(id = "", imageReference = imageReference6), transversalState)
       val knowledge6 = Knowledge(sentence = "There is a dog", lang = "", extentInfoJson = "{}", knowledgeForImages = List(knowledgeForImages6))
 
+      val reference7 = Reference(url = "", surface = "evidence", surfaceIndex = 2, isWholeSentence = false, originalUrlOrReference = "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000001086171&fileKind=0", metaInformations = List.empty[String])
+      val tableReference7 = TableReference(reference = reference7, skipHeaderRows= 8, multiHeaderRowsForExcel=4, sheetNameForExcel="se0102")
+      val knowledgeForTable7 = uploadTable(KnowledgeForTable(id = "", tableReference = tableReference7), transversalState)
+      val knowledge7 = Knowledge(sentence = "There is evidence.", lang = "", extentInfoJson = "{}", knowledgeForTables = List(knowledgeForTable7))
+
       val knowledgeSentenceSet = KnowledgeSentenceSet(
-        premiseList = List(knowledge1, knowledge2, knowledge3),
-        premiseLogicRelation = List(PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2)),
-        claimList = List(knowledge4, knowledge5, knowledge6),
-        claimLogicRelation = List(PropositionRelation(operator = "OR", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2))
+        premiseList = List(knowledge1, knowledge2, knowledge3, knowledge3a),
+        premiseLogicRelation = List(PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 3)),
+        claimList = List(knowledge4, knowledge5, knowledge6, knowledge7),
+        claimLogicRelation = List(PropositionRelation(operator = "OR", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 3))
       )
       val jsonStr = Json.toJson(knowledgeSentenceSet).toString()
 
@@ -113,11 +132,17 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
 
       val queryResult4: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/val2017/000000039769.jpg'})-[:ImageEdge]->(t:PremiseNode{surface:'cats'}) RETURN s, t", transversalState)
       assert(queryResult4.records.size == 1)
-
       val urlCat = queryResult4.records.head.head.value.featureNode.get.url
       val queryResult5: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:ImageNode{source:'http://images.cocodataset.org/train2017/000000428746.jpg'})-[:ImageEdge]->(t:ClaimNode{surface:'dog'}) RETURN s, t", transversalState)
       assert(queryResult5.records.size == 1)
       val urlDog = queryResult5.records.head.head.value.featureNode.get.url
+
+      val result5: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:TableNode{source:'https://www.e-stat.go.jp/stat-search/file-download?statInfId=000001086170&fileKind=0'})-[:TableEdge]->(t:PremiseNode{surface:'data'}) RETURN s, t", transversalState)
+      val urlTable1 = result5.records.head.head.value.featureNode.get.url
+      assert(result5.records.size == 1)
+      val result6: Neo4jRecords = TestUtilsEx.executeQueryAndReturn("MATCH (s:TableNode{source:'https://www.e-stat.go.jp/stat-search/file-download?statInfId=000001086171&fileKind=0'})-[:TableEdge]->(t:ClaimNode{surface:'evidence'}) RETURN s, t", transversalState)
+      val urlTable2 = result6.records.head.head.value.featureNode.get.url
+      assert(result6.records.size == 1)
 
       val knowledgeSentenceSet2:KnowledgeSentenceSet = Json.parse(jsonStr).as[KnowledgeSentenceSet]
       for(knowledge <- knowledgeSentenceSet2.premiseList:::knowledgeSentenceSet2.claimList){
@@ -134,14 +159,27 @@ class HomeControllerSpecEnglish extends PlaySpec with BeforeAndAfter with Before
             case "dog" => urlDog
             case _ => "BAD URL"
           }
-          val vector = this.getImageVector(url)
-          val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = 1)).toString()
-          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
-          val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
-          assert(result.ids.size > 0 && result.similarities.head > 0.999)
-          result.ids.map(x => deleteFeatureVector(x, FeatureType.IMAGE))
-        })
+            val vector = this.getImageVector(url)
+            val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = 1)).toString()
+            val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_IMAGE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
+            val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
+            assert(result.ids.size > 0 && result.similarities.head > 0.999)
+            result.ids.map(x => deleteFeatureVector(x, FeatureType.IMAGE))
+          })
 
+        knowledge.knowledgeForTables.foreach(x => {
+        val url: String = x.tableReference.reference.surface match {
+          case "data" => urlTable1
+          case "evidence" => urlTable2          
+          case _ => "BAD URL"
+        }
+          val vector = TestUtilsEx.getTableVector(url, transversalState)
+          val json: String = Json.toJson(SingleFeatureVectorForSearch(vector = vector.vector, num = 1)).toString()
+          val featureVectorSearchResultJson: String = ToposoidUtils.callComponent(json, conf.getString("TOPOSOID_TABLE_VECTORDB_ACCESSOR_HOST"), conf.getString("TOPOSOID_TABLE_VECTORDB_ACCESSOR_PORT"), "search", transversalState)
+          val result = Json.parse(featureVectorSearchResultJson).as[FeatureVectorSearchResult]
+          assert(result.ids.size > 0 && result.similarities.filter(x => x > 0.95).size > 0)
+          result.ids.map(x => TestUtilsEx.deleteFeatureVector(x, FeatureType.TABLE, transversalState))
+        })
       }
 
     }
