@@ -91,7 +91,7 @@ class HomeControllerSpecJapanese extends PlaySpec with BeforeAndAfter with Befor
       val knowledgeSentenceSet: KnowledgeSentenceSet = KnowledgeSentenceSet(
         premiseList = List(knowledge1, knowledge2, knowledge3, knowledge3a),
         premiseLogicRelation = List(PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 3)),
-        claimList = List(knowledge4, knowledge5, knowledge6),
+        claimList = List(knowledge4, knowledge5, knowledge6, knowledge7),
         claimLogicRelation = List(PropositionRelation(operator = "OR", sourceIndex = 0, destinationIndex = 1), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 2), PropositionRelation(operator = "AND", sourceIndex = 0, destinationIndex = 3))
       )
       val jsonStr = Json.toJson(knowledgeSentenceSet).toString()
