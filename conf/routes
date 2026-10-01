@@ -6,4 +6,5 @@
 # An example controller showing a sample home page
 + nocsrf
 POST    /registerForManual                     controllers.HomeController.registerForManual()
++ nocsrf
 POST    /split                                 controllers.HomeController.split()
